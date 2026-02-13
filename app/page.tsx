@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import Authform from "@/components/landing/AuthForm";
 import DashboardPreview from "@/components/landing/DashboardPreview";
@@ -11,6 +11,7 @@ type AuthType = "signup" | "signin";
 export default function Home() {
   const [isAuthOpen, setAuthOpen] = useState(false);
   const [authType, setAuthType] = useState<AuthType>("signup");
+
 
   const handleOpenAuth = (type: AuthType) => {
     setAuthType(type);

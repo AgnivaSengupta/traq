@@ -1,6 +1,23 @@
 import { Button } from "@/components/ui/button";
+import { signOut, useSession } from "@/lib/auth-client";
+// import { getSession } from "@/lib/auth";
+import { User2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
-const navLinks = ["Home", "Features", "How It Works", "Pricing", "Testimonials", "FAQ"];
+const navLinks = [
+  "Home",
+  "Features",
+  "How It Works",
+  "Pricing",
+  "Testimonials",
+  "FAQ",
+];
 
 interface NavbarProps {
   onGetStarted?: () => void;
@@ -13,11 +30,15 @@ interface HeroSectionProps {
 }
 
 const Navbar = ({ handleOpenAuth }: HeroSectionProps) => {
+  const { data: session, isPending } = useSession();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between">
-
-        <a href="/" className="text-xl font-bold tracking-tight text-foreground">
+        <a
+          href="/"
+          className="text-xl font-bold tracking-tight text-foreground"
+        >
           traq
         </a>
 
@@ -34,12 +55,47 @@ const Navbar = ({ handleOpenAuth }: HeroSectionProps) => {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => handleOpenAuth('signin')}>
-            Login
-          </Button>
-          <Button variant='outline' size="sm" className="rounded-md px-5" onClick={() => handleOpenAuth('signup')}>
-            Get Started
-          </Button>
+          {session?.user ? (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <User2 />
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>
+                    <div>
+                      <p>{session.user.name}</p>
+                      <p>{session.user.name}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    Log Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden sm:inline-flex"
+                onClick={() => handleOpenAuth("signin")}
+              >
+                Login
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-md px-5"
+                onClick={() => handleOpenAuth("signup")}
+              >
+                Get Started
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

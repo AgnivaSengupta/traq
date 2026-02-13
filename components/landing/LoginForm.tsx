@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { signIn } from "@/lib/actions/auth-actions";
+import { signIn } from "@/lib/auth-client";
 
 interface RegisterDialogProps {
   open: boolean;
@@ -46,7 +46,15 @@ const LoginForm = ({
     startTransition(async () => {
       try {
         // Call your Server Action
-        await signIn(email, password);
+        const result = await signIn.email({
+          email,
+          password,
+        });
+
+        if (result?.error) {
+          setError(result.error.message || "Invalid email or password");
+          return;
+        }
 
         // If no error thrown:
         onOpenChange(false);
@@ -96,6 +104,12 @@ const LoginForm = ({
           <Button type="submit" disabled={isPending} className="w-full rounded-full">
             {isPending ? "Signing In..." : "Log In"}
           </Button>
+
+          {error && (
+            <div className="rounded-md bg-destructive text-sm p-2 text-destructive">
+              {error}
+            </div>
+          )}
 
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">

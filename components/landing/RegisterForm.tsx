@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { signUp } from "@/lib/actions/auth-actions";
+import { signUp } from "@/lib/auth-client";
 
 interface RegisterDialogProps {
   open: boolean;
@@ -20,11 +20,15 @@ interface RegisterDialogProps {
   onSwitchToLogin: () => void;
 }
 
-const RegisterForm = ({ open, onOpenChange, onSwitchToLogin }: RegisterDialogProps) => {
+const RegisterForm = ({
+  open,
+  onOpenChange,
+  onSwitchToLogin,
+}: RegisterDialogProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState("");
-  
+  const [error, setError] = useState<string | null>(null);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,24 +36,27 @@ const RegisterForm = ({ open, onOpenChange, onSwitchToLogin }: RegisterDialogPro
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     startTransition(async () => {
       try {
-        const result = await signUp(email, password, name);
-        
+        const result = await signUp.email({
+          name,
+          email,
+          password,
+        });
+
         if (result?.error) {
-          setError(result.error.message);
+          setError(result.error.message ?? "Failed to signup");
           return;
         }
-        
+
         onOpenChange(false);
         router.refresh();
         router.push("/dashboard");
-        
-      } catch(err: any) {
+      } catch (err: any) {
         setError(err.message || "Something went wrong.");
       }
-    })
+    });
     // Registration logic placeholder
     // console.log("Register:", { name, email, password });
     // onOpenChange(false);
@@ -100,9 +107,19 @@ const RegisterForm = ({ open, onOpenChange, onSwitchToLogin }: RegisterDialogPro
               minLength={8}
             />
           </div>
-          <Button type="submit" disabled={isPending} className="w-full rounded-full">
-            {isPending ? 'Creating account...' :'Get Started'}
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="w-full rounded-full"
+          >
+            {isPending ? "Creating account..." : "Get Started"}
           </Button>
+
+          {error && (
+            <div className="rounded-md bg-destructive/20 text-sm p-2 px-4 text-destructive">
+              {error}
+            </div>
+          )}
 
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">
@@ -119,7 +136,7 @@ const RegisterForm = ({ open, onOpenChange, onSwitchToLogin }: RegisterDialogPro
               Sign in
             </button>
           </div>
-          
+
           <p className="text-center text-xs text-muted-foreground">
             By signing up, you agree to our Terms and Privacy Policy.
           </p>
