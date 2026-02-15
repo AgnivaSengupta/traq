@@ -18,7 +18,8 @@ interface KanbanColumnProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, columnId: string) => void;
   isDragOver: boolean;
-  onAddTask: (columnId: string, position: string, company: string) => void;
+  // onAddTask: (columnId: string, position: string, company: string) => void;
+  onAddTask: () => void;
 }
 
 const KanbanColumn = ({
@@ -31,37 +32,36 @@ const KanbanColumn = ({
   isDragOver,
   onAddTask,
 }: KanbanColumnProps) => {
-  const [isAdding, setIsAdding] = useState(false);
-  const [newPosition, setNewPosition] = useState("");
-  const [newCompany, setNewCompany] = useState("");
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  // const [isAdding, setIsAdding] = useState(false);
+  // const [newPosition, setNewPosition] = useState("");
+  // const [newCompany, setNewCompany] = useState("");
+  // const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    if (isAdding) inputRef.current?.focus();
-  }, [isAdding]);
+  // useEffect(() => {
+  //   if (isAdding) inputRef.current?.focus();
+  // }, [isAdding]);
 
-  const handleSubmit = () => {
-    // const trimmed = newPosition.trim();
-    if (newPosition.trim() || newCompany.trim()) {
-      onAddTask(id, newPosition.trim(), newCompany.trim());
+  // const handleSubmit = () => {
+  //   if (newPosition.trim() || newCompany.trim()) {
+  //     onAddTask(id, newPosition.trim(), newCompany.trim());
 
-      setNewPosition("");
-      setNewCompany("");
-      setIsAdding(false);
-    }
-  };
+  //     setNewPosition("");
+  //     setNewCompany("");
+  //     setIsAdding(false);
+  //   }
+  // };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
-    }
-    if (e.key === "Escape") {
-      setNewPosition("");
-      setNewCompany("");
-      setIsAdding(false);
-    }
-  };
+  // const handleKeyDown = (e: React.KeyboardEvent) => {
+  //   if (e.key === "Enter" && !e.shiftKey) {
+  //     e.preventDefault();
+  //     handleSubmit();
+  //   }
+  //   if (e.key === "Escape") {
+  //     setNewPosition("");
+  //     setNewCompany("");
+  //     setIsAdding(false);
+  //   }
+  // };
 
   return (
     <div
@@ -74,11 +74,11 @@ const KanbanColumn = ({
       {/* Column header */}
       <div className="flex items-center gap-2 pb-1">
         <span className={`h-2.5 w-2.5 rounded-full`} />
-        <span className="text-sm font-semibold text-foreground">{label}</span>
-        <span className="text-xs text-muted-foreground">{jobs.length}</span>
+        <span className="text-lg font-serif tracking-wider text-foreground">{label}</span>
+        <span className="text-lg font-serif text-muted-foreground">{jobs.length}</span>
         <div className="ml-auto flex items-center gap-1">
           <button
-            onClick={() => setIsAdding(true)}
+            onClick={onAddTask}
             className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors"
           >
             <Plus className="h-4 w-4" />
@@ -91,7 +91,7 @@ const KanbanColumn = ({
 
       <div className="bg-[#EFEFED] h-full rounded-sm p-2">
         {/* New task form */}
-        {isAdding && (
+        {/*{isAdding && (
           <div className="mb-2.5 rounded-lg border border-kanban-progress/40 bg-card p-3 shadow-sm">
             <input
               ref={inputRef}
@@ -130,7 +130,7 @@ const KanbanColumn = ({
               </button>
             </div>
           </div>
-        )}
+        )}*/}
 
         {/* Cards */}
         <div className="flex flex-col gap-2.5 pb-4">

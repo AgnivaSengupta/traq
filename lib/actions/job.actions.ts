@@ -1,0 +1,97 @@
+"use server";
+
+import { JobApplication, Column } from "../models";
+import connectDB from "../db";
+import { revalidatePath } from "next/cache";
+
+interface CreateJobParams {
+  userId: string; // <--- Add this
+  boardId: string; // <--- Add this
+  company: string;
+  position: string;
+  columnId: string;
+  salary?: string;
+  location?: string;
+  jobUrl?: string;
+  applicationDate?: string;
+}
+
+export async function createJobApplication(params: CreateJobParams) {
+  try {
+    await connectDB();
+
+    // 1. Create the new job in MongoDB
+    const newJob = await JobApplication.create({
+      userId: params.userId, // <--- Pass to DB
+      boardId: params.boardId, // <--- Pass to DB
+      company: params.company,
+      position: params.position,
+      columnId: params.columnId,
+      salary: params.salary,
+      location: params.location,
+      jobUrl: params.jobUrl,
+      applicationDate: params.applicationDate,
+      order: 0, // You might want to calculate the max order + 1 here dynamically
+      status: "applied",
+    });
+
+    await Column.findByIdAndUpdate(params.columnId, {
+      $push: { jobApplications: newJob._id },
+    });
+
+    // 2. Convert Mongoose document to a plain JS object to pass to client
+    // (This handles converting _id ObjectIds to strings)
+    const jobObject = JSON.parse(JSON.stringify(newJob));
+
+    // 3. Revalidate the board page so it fetches the new data on refresh
+    revalidatePath("/board");
+
+    return { success: true, job: jobObject };
+  } catch (error) {
+    console.error("Error creating job:", error);
+    return { success: false, error: "Failed to create job" };
+  }
+}
+
+
+export async function updateJobStatus(jobId: string, newColumnId: string) {
+  try {
+    await connectDB();
+
+    // 1. Find the current job to get its OLD column ID
+    const currentJob = await JobApplication.findById(jobId);
+    if (!currentJob) return { success: false, error: "Job not found" };
+
+    const oldColumnId = currentJob.columnId;
+
+    // optimization: If the column hasn't actually changed, do nothing
+    if (oldColumnId.toString() === newColumnId) {
+      return { success: true };
+    }
+
+    // 2. Update the Job's columnId
+    const updatedJob = await JobApplication.findByIdAndUpdate(
+      jobId,
+      { columnId: newColumnId },
+      { new: true }
+    );
+
+    // 3. Remove job reference from the OLD Column
+    if (oldColumnId) {
+      await Column.findByIdAndUpdate(oldColumnId, {
+        $pull: { jobApplications: jobId }
+      });
+    }
+
+    // 4. Add job reference to the NEW Column
+    await Column.findByIdAndUpdate(newColumnId, {
+      $push: { jobApplications: jobId }
+    });
+
+    revalidatePath("/board");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating job status:", error);
+    return { success: false, error: "Failed to update job status" };
+  }
+}

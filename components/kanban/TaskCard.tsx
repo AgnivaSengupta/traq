@@ -1,8 +1,21 @@
-import { Calendar, Delete, DollarSign, GripVertical, MapPin, MoreHorizontal, Pen } from "lucide-react";
+import {
+  Calendar,
+  Delete,
+  DollarSign,
+  GripVertical,
+  MapPin,
+  MoreHorizontal,
+  Pen,
+} from "lucide-react";
 import type { Task } from "@/data/kanban";
 import { JobApplication } from "@/lib/models/models.types";
 import { Badge } from "../ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface TaskCardProps {
   job: JobApplication;
@@ -30,6 +43,14 @@ const TaskCard = ({ job, onDragStart }: TaskCardProps) => {
   // const formattedDate = job.applicationDate
   //     ? new Date(job.applicationDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })
   //     : null;
+  // 
+  const formattedDate = job.applicationDate
+      ? new Date(job.applicationDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric" // Remove this line if you want just "Feb 18"
+        })
+      : null;
 
   return (
     <div
@@ -50,27 +71,26 @@ const TaskCard = ({ job, onDragStart }: TaskCardProps) => {
             {job.company}
           </span>
         </div>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors">
               <MoreHorizontal className="h-4 w-4" />
             </button>
           </DropdownMenuTrigger>
-          
+
           <DropdownMenuContent>
             <DropdownMenuItem>
-              <Pen className="w-2 h-2"/>
+              <Pen className="w-2 h-2" />
               Edit
             </DropdownMenuItem>
-            
+
             <DropdownMenuItem className="text-destructive">
-              <Delete className="w-2 h-2"/>
+              <Delete className="w-2 h-2" />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
       </div>
       {/*<div className="flex items-center gap-1">
         <div
@@ -89,16 +109,21 @@ const TaskCard = ({ job, onDragStart }: TaskCardProps) => {
         {job.position}
         {/*summer 2026 software engineering intern (platform)*/}
       </p>
-      
+
       <div className="flex justify-between items-center mt-4 mb-2">
-        <Badge variant='secondary' className="rounded-sm text-xs bg-blue-400/30">Internship</Badge>
-        
-        <Badge variant='link' className="text-xs text-red-800">
+        <Badge
+          variant="secondary"
+          className="rounded-sm text-xs bg-blue-400/30"
+        >
+          Internship
+        </Badge>
+
+        <Badge variant="link" className="text-xs text-red-800">
           <Calendar className="h-3.5 w-3.5" />
-          Date
+          {formattedDate}
         </Badge>
       </div>
-      
+
       <div className="w-full h-[0.25px] bg-zinc-300/50 "></div>
 
       {(job.location || job.salary) && (

@@ -2,27 +2,20 @@
 
 import { useState } from "react";
 import {
-  Search,
-  Inbox,
-  CircleDot, // For "My issues"
-  ChevronDown,
-  ChevronRight,
   SquareKanban, // For "Board"
   Calendar,
-  ListTodo, // For "Backlog"
-  Archive,
-  FolderOpen,
-  LayoutTemplate, // For "Views"
-  HelpCircle,
-  Sun,
+  TableProperties, // For "Applications" (List view)
+  FileText, // For "Resumes"
+  Settings,
   PanelLeftClose,
   PanelLeft,
-  Sprout, // For MSP Launch
-  CircleDashed, // For Issues
-  RotateCw, // For Sprints
-  Layers, // For Projects
-  Sparkles, // For V1.0
-  Triangle, // For Landing Page
+  Briefcase, // For "Job Offers" or similar
+  LogOut,
+  Sparkles,
+  Triangle,
+  HelpCircle,
+  Sun,
+  User,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -37,13 +30,9 @@ const Sidebar = () => {
         >
           <PanelLeft className="h-4 w-4" />
         </button>
-        <div className="flex h-6 w-6 items-center justify-center rounded bg-yellow-400 text-black text-xs font-bold shadow-sm">
-          <div className="grid grid-cols-2 gap-[1px]">
-            <div className="bg-black h-1 w-1 rounded-[1px]"></div>
-            <div className="bg-black/30 h-1 w-1 rounded-[1px]"></div>
-            <div className="bg-black/30 h-1 w-1 rounded-[1px]"></div>
-            <div className="bg-black h-1 w-1 rounded-[1px]"></div>
-          </div>
+        {/* Minimized Logo */}
+        <div className="flex h-6 w-6 items-center justify-center rounded bg-black text-white text-xs font-bold shadow-sm">
+          t
         </div>
       </aside>
     );
@@ -52,17 +41,12 @@ const Sidebar = () => {
   return (
     <aside className="flex h-screen w-[260px] shrink-0 flex-col border-r border-gray-200 bg-[#F7F8FA] text-gray-700 text-[13px] select-none font-sans">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3.5">
-        <div className="flex h-5 w-5 items-center justify-center rounded bg-yellow-400 text-black text-xs font-bold shadow-sm">
-          <div className="grid grid-cols-2 gap-[1px]">
-            <div className="bg-black h-1 w-1 rounded-[1px]"></div>
-            <div className="bg-black/30 h-1 w-1 rounded-[1px]"></div>
-            <div className="bg-black/30 h-1 w-1 rounded-[1px]"></div>
-            <div className="bg-black h-1 w-1 rounded-[1px]"></div>
-          </div>
-        </div>
-        <span className="font-semibold text-sm text-gray-800">Brandby</span>
-        <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+      <div className="flex items-center gap-2 px-4 py-3.5 mb-2">
+         {/* Logo mark - kept simple like your original */}
+         <div className="flex h-5 w-5 items-center justify-center rounded bg-black text-white text-[10px] font-bold shadow-sm">
+            t
+         </div>
+        <span className="font-semibold text-base text-gray-800">traq</span>
         <button
           onClick={() => setCollapsed(true)}
           className="ml-auto rounded p-1 text-gray-400 hover:bg-gray-200 transition-colors"
@@ -71,111 +55,80 @@ const Sidebar = () => {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="px-3 mb-2">
-        <div className="flex items-center gap-2 rounded-md bg-white border border-gray-200 shadow-sm px-2.5 py-1.5 text-gray-400 group cursor-text hover:border-gray-300 transition-colors">
-          <Search className="h-3.5 w-3.5" />
-          <span className="text-gray-500">Search...</span>
-          <div className="ml-auto flex h-4 w-4 items-center justify-center rounded border border-gray-200 bg-gray-50 text-[10px] font-medium text-gray-400 font-mono group-hover:border-gray-300">
-            /
-          </div>
-        </div>
-      </div>
-
-      {/* Primary Nav */}
+      {/* SECTION 1: MAIN TRACKER */}
+      {/* Kept the tight gap-0.5 from your original code */}
       <nav className="flex flex-col gap-0.5 px-2 mb-4">
-        <NavItem icon={Inbox} label="Inbox" />
-        <NavItem icon={CircleDot} label="My issues" />
+        {/* Section Header Style Matches "Teams" */}
+        <div className="px-2 pb-1 pt-2 text-xs font-medium text-gray-500">
+          Tracker
+        </div>
+        
+        <NavItem 
+            icon={SquareKanban} 
+            label="Board" 
+            active={true} // Default active state
+        />
+        <NavItem 
+            icon={TableProperties} 
+            label="Applications" 
+        />
+        <NavItem 
+            icon={Calendar} 
+            label="Calendar" 
+        />
       </nav>
 
-      {/* Teams Section */}
+      {/* SECTION 2: ASSETS */}
       <div className="flex flex-col px-3 gap-0.5">
         <div className="px-2 pb-1 text-xs font-medium text-gray-500">
-          Teams
+          Assets
         </div>
 
-        {/* Team: MSP Launch */}
-        <div className="flex items-center gap-2 px-2 py-1.5 text-gray-800 font-medium hover:bg-gray-200/50 rounded-md cursor-pointer mb-0.5">
-          <Sprout className="h-3.5 w-3.5 text-green-600" />
-          <span>MSP Launch</span>
-          <ChevronDown className="ml-auto h-3 w-3 text-gray-400" />
-        </div>
-
-        {/* Hierarchy Tree */}
-        <div className="relative pl-2.5 ml-2.5 border-l border-gray-200/80 space-y-0.5">
-          
-          {/* Sub-group: Issues */}
-          <div className="relative">
-            <NavItem icon={CircleDashed} label="Issues" />
-            
-            {/* Nested under Issues */}
-            <div className="relative pl-5 pt-0.5 flex flex-col gap-0.5">
-               {/* Vertical line specifically for this sub-list */}
-               <div className="absolute left-[9px] top-0 bottom-2 w-px bg-gray-200/80" />
-               
-               <NavItem label="Board" active />
-               <NavItem label="Calendar" />
-               <NavItem label="Backlog" />
-            </div>
-          </div>
-
-          {/* Sub-group: Sprints */}
-          <div className="relative mt-1">
-            <NavItem icon={RotateCw} label="Sprints" />
-            
-            <div className="relative pl-5 pt-0.5 flex flex-col gap-0.5">
-               <div className="absolute left-[9px] top-0 bottom-2 w-px bg-gray-200/80" />
-               <NavItem label="Current" badge="2" />
-               <NavItem label="Upcoming" />
-               <NavItem label="Completed" />
-            </div>
-          </div>
-
-          {/* Other items in MSP Launch */}
-          <NavItem icon={Layers} label="Projects" />
-          <NavItem icon={LayoutTemplate} label="Views" />
-
-        </div>
+        {/* Removed hierarchy tree lines, just clean list */}
+        <NavItem icon={FileText} label="Resumes" />
+        <NavItem icon={Briefcase} label="Offers & Contracts" />
+        <NavItem icon={Sparkles} label="AI Insights" iconColor="text-purple-600" />
       </div>
 
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Favorites / Projects */}
+      {/* USER & SETTINGS */}
       <div className="flex flex-col gap-0.5 px-2 py-2">
         <NavItem 
-          icon={Sparkles} 
-          iconColor="text-purple-600"
-          label="V1.0" 
+            icon={Settings} 
+            label="Settings" 
         />
-        <NavItem 
-          icon={Triangle} 
-          iconColor="text-orange-500 fill-orange-500" // filled triangle
-          label="Landing Page" 
-        />
+        {/* Modified Favorites style for User Profile */}
+         <div className="group flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors text-gray-600 hover:bg-gray-200/50">
+            <User className="h-4 w-4 shrink-0 text-gray-500" />
+            <span>Agniva</span>
+            <LogOut className="ml-auto h-3.5 w-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer - Kept Exactly as Original */}
       <div className="flex items-center gap-1 border-t border-gray-200 px-3 py-2 text-gray-400 mt-2">
         <button className="p-1 hover:text-gray-600 transition-colors">
           <HelpCircle className="h-4 w-4" />
         </button>
         <div className="h-4 w-px bg-gray-200 mx-1"></div>
-         <div className="flex bg-gray-200/50 rounded-full p-0.5">
-            <button className="p-0.5 rounded-full bg-white shadow-sm text-gray-600">
-                <Sun className="h-3.5 w-3.5" />
-            </button>
-            <button className="p-0.5 rounded-full text-gray-400">
-                 {/* Moon icon usually goes here, obscured in image */}
-            </button>
-         </div>
+        <div className="flex bg-gray-200/50 rounded-full p-0.5">
+          <button className="p-0.5 rounded-full bg-white shadow-sm text-gray-600">
+            <Sun className="h-3.5 w-3.5" />
+          </button>
+          <button className="p-0.5 rounded-full text-gray-400">
+             {/* Moon icon placeholder */}
+          </button>
+        </div>
         
-        <span className="ml-auto text-xs text-gray-400/80 font-mono">v1.00-20-002-03</span>
+        <span className="ml-auto text-xs text-gray-400/80 font-mono">v1.0.0</span>
       </div>
     </aside>
   );
 };
 
+// Kept your EXACT NavItem component to preserve the visual style
 function NavItem({
   icon: Icon,
   label,
