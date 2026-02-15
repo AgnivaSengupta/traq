@@ -13,7 +13,7 @@ export async function initUserBoard(userId: string) {
   try {
     await connectDB()
     // check if board exits already
-    const existingBoard = Board.findOne({ userId, name: "Job Hunt" });
+    const existingBoard = await Board.findOne({ userId, name: "Job Hunt" });
     if (existingBoard) {
       return existingBoard;
     }
