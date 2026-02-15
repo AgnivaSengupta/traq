@@ -2,19 +2,10 @@
 
 import { useState, useCallback } from "react";
 import { Star, Share2, Filter, LayoutGrid } from "lucide-react";
-import { COLUMNS, initialTasks, type Task, type TaskStatus } from "@/data/kanban";
 import KanbanColumn from "./KanbanColumn";
 import { BoardData, JobApplication } from "@/lib/models/models.types";
 
-const ASSIGNEES = [
-  { initials: "AJ", color: "hsl(260 60% 65%)" },
-  { initials: "KR", color: "hsl(200 70% 55%)" },
-  { initials: "TM", color: "hsl(340 65% 55%)" },
-  { initials: "LS", color: "hsl(160 50% 45%)" },
-  { initials: "DP", color: "hsl(30 70% 55%)" },
-];
-
-let nextId = 120;
+// let nextId = 120;
 
 interface Props {
   boardData: BoardData;
@@ -24,19 +15,19 @@ const KanbanBoard = ({ boardData }: Props) => {
   // const [tasks, setTasks] = useState<JobApplication[]>();
   // 
   const [applications, setApplications] = useState<JobApplication[]>(() => {
-    if (!boardData || !boardData.columns) return []; 
+    if (!boardData || !boardData.columns) return [];
     
     const allJobs: JobApplication[] = [];
     boardData.columns.forEach((col) => {
       if (col.jobApplications && col.jobApplications.length > 0) {
         col.jobApplications.forEach((job) => {
-          allJobs.push({ ...job, columnId: col._id })
+          allJobs.push({ ...job, columnId: col._id, status: col.name })
         })
       }
     });
-    
     return allJobs;
-  })
+  });
+
   
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
@@ -54,21 +45,22 @@ const KanbanBoard = ({ boardData }: Props) => {
   // }, []);
   
   
-  const handleAddJob = useCallback((columnId: string, position: string) => {
+  const handleAddJob = useCallback((columnId: string, position: string, company: string) => {
     const newJob: JobApplication = {
       _id: `temp-${Date.now()}`,
       position: position,
-      company: "New company", //default ==  need to ask the user
+      company: company || "Unknown company", //default ==  need to ask the user
       status: "applied",
       order: 0,
       // boardId: boardData._id,
       columnId: columnId,
-      salary: "N/A",
+      salary: "50k",
+      location: "Bangalore, India"
     };
     
     setApplications((prev) => [newJob, ...prev]);
     
-  }, [boardData, boardData.userId]);
+  }, [boardData]);
 
   const handleDragStart = (e: React.DragEvent, jobId: string) => {
     e.dataTransfer.setData("jobId", jobId);
@@ -129,14 +121,14 @@ const KanbanBoard = ({ boardData }: Props) => {
         {boardData.columns.map((col) => (
           <KanbanColumn
             key={col._id}
-            id={col.name.toLowerCase()}
+            id={col._id}
             label={col.name}
-            jobs={col.jobApplications.filter((t) => t.status === col._id)}
+            jobs={applications.filter((t) => t.columnId === col._id)}
             onDragStart={handleDragStart}
             onDragOver={(e) => handleDragOver(e, col._id)}
             onDrop={handleDrop}
             isDragOver={dragOverColumn === col._id}
-            onAddTask={handleAddTask}
+            onAddTask={handleAddJob}
           />
         ))}
       </div>

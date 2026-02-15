@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Plus, MoreHorizontal } from "lucide-react";
-import type { Task, TaskStatus } from "@/data/kanban";
+// import type { Task, TaskStatus } from "@/data/kanban";
 import TaskCard from "./TaskCard";
 import { JobApplication } from "@/lib/models/models.types";
 
-const statusColors: Record<TaskStatus, string> = {
-  todo: "bg-kanban-todo",
-  "in-progress": "bg-kanban-progress",
-  "in-review": "bg-kanban-review",
-};
+// const statusColors: Record<TaskStatus, string> = {
+//   todo: "bg-kanban-todo",
+//   "in-progress": "bg-kanban-progress",
+//   "in-review": "bg-kanban-review",
+// };
 
 interface KanbanColumnProps {
   id: string;
@@ -18,7 +18,7 @@ interface KanbanColumnProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, columnId: string) => void;
   isDragOver: boolean;
-  onAddTask: (columnId: string, position: string) => void;
+  onAddTask: (columnId: string, position: string, company: string) => void;
 }
 
 const KanbanColumn = ({
@@ -33,6 +33,7 @@ const KanbanColumn = ({
 }: KanbanColumnProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const [newPosition, setNewPosition] = useState("");
+  const [newCompany, setNewCompany] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -40,10 +41,12 @@ const KanbanColumn = ({
   }, [isAdding]);
 
   const handleSubmit = () => {
-    const trimmed = newPosition.trim();
-    if (trimmed) {
-      onAddTask(id, trimmed);
+    // const trimmed = newPosition.trim();
+    if (newPosition.trim() || newCompany.trim()) {
+      onAddTask(id, newPosition.trim(), newCompany.trim());
+
       setNewPosition("");
+      setNewCompany("");
       setIsAdding(false);
     }
   };
@@ -55,6 +58,7 @@ const KanbanColumn = ({
     }
     if (e.key === "Escape") {
       setNewPosition("");
+      setNewCompany("");
       setIsAdding(false);
     }
   };
@@ -69,7 +73,7 @@ const KanbanColumn = ({
     >
       {/* Column header */}
       <div className="flex items-center gap-2 pb-1">
-        <span className={`h-2.5 w-2.5 rounded-full ${statusColors[id]}`} />
+        <span className={`h-2.5 w-2.5 rounded-full`} />
         <span className="text-sm font-semibold text-foreground">{label}</span>
         <span className="text-xs text-muted-foreground">{jobs.length}</span>
         <div className="ml-auto flex items-center gap-1">
@@ -84,12 +88,20 @@ const KanbanColumn = ({
           </button>
         </div>
       </div>
-      
-      
+
       <div className="bg-[#EFEFED] h-full rounded-sm p-2">
         {/* New task form */}
         {isAdding && (
           <div className="mb-2.5 rounded-lg border border-kanban-progress/40 bg-card p-3 shadow-sm">
+            <input
+              ref={inputRef}
+              value={newCompany}
+              onChange={(e) => setNewCompany(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Company (e.g. Google)"
+              className="w-full rounded bg-transparent text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+
             <textarea
               ref={inputRef}
               value={newPosition}
@@ -108,7 +120,10 @@ const KanbanColumn = ({
                 Add
               </button>
               <button
-                onClick={() => { setNewPosition(""); setIsAdding(false); }}
+                onClick={() => {
+                  setNewPosition("");
+                  setIsAdding(false);
+                }}
                 className="rounded-md px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-accent transition-colors"
               >
                 Cancel
@@ -116,13 +131,13 @@ const KanbanColumn = ({
             </div>
           </div>
         )}
-  
+
         {/* Cards */}
         <div className="flex flex-col gap-2.5 pb-4">
           {jobs.map((job) => (
             <TaskCard key={job._id} job={job} onDragStart={onDragStart} />
           ))}
-  
+
           {/* Drop zone hint */}
           {isDragOver && jobs.length === 0 && (
             <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-kanban-progress/40 py-8 text-xs text-muted-foreground">
@@ -131,7 +146,6 @@ const KanbanColumn = ({
           )}
         </div>
       </div>
-      
     </div>
   );
 };

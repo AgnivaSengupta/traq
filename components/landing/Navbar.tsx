@@ -66,7 +66,7 @@ const Navbar = ({ handleOpenAuth }: HeroSectionProps) => {
                   <DropdownMenuLabel>
                     <div>
                       <p>{session.user.name}</p>
-                      <p>{session.user.name}</p>
+                      {/*<p>{session.user.name}</p>*/}
                     </div>
                   </DropdownMenuLabel>
                   
