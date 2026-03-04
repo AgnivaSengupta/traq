@@ -1,8 +1,8 @@
 "use server";
-
 import { JobApplication, Column } from "../models";
 import connectDB from "../db";
 import { revalidatePath } from "next/cache";
+import { IExtractedJD } from "../models/jobApplication";
 
 interface CreateJobParams {
   userId: string; // <--- Add this
@@ -14,6 +14,7 @@ interface CreateJobParams {
   location?: string;
   jobUrl?: string;
   applicationDate?: string;
+  description?: IExtractedJD;
 }
 
 export async function createJobApplication(params: CreateJobParams) {
@@ -31,6 +32,7 @@ export async function createJobApplication(params: CreateJobParams) {
       location: params.location,
       jobUrl: params.jobUrl,
       applicationDate: params.applicationDate,
+      description: params.description,
       order: 0, // You might want to calculate the max order + 1 here dynamically
       status: "applied",
     });
@@ -93,5 +95,47 @@ export async function updateJobStatus(jobId: string, newColumnId: string) {
   } catch (error) {
     console.error("Error updating job status:", error);
     return { success: false, error: "Failed to update job status" };
+  }
+}
+
+
+export async function deleteJob(jobId: string) {
+  try {
+    await connectDB()
+    
+    const currentJob = await JobApplication.findById(jobId);
+    if (!currentJob) return { success: false, error: "Job not found" };
+    
+    const columnId = currentJob.columnId;
+    if (columnId) {
+      await Column.findByIdAndUpdate(columnId, {
+        $pull: { jobApplications: jobId }
+      });
+    }
+    
+    await JobApplication.findByIdAndDelete(jobId);
+    
+    revalidatePath("/board");
+    return { success: true };
+    
+  } catch(error) {
+    console.error("Error deleting job:", error);
+    return { success: false, error: "Failed to delete job" };
+  }
+}
+
+
+export async function getUserApplications(userId: string) {
+  try {
+    await connectDB();
+    const userApplications = await JobApplication.find({ userId: userId })
+      .populate("columnId", "name")
+      .sort({createdAt: -1})
+      .lean();
+    
+    return { success: true, applications: JSON.parse(JSON.stringify(userApplications))};
+  } catch (error) {
+    console.log("Error fetching the data: ", error);
+    return {success: false, error: "Failed to fetch data"}
   }
 }

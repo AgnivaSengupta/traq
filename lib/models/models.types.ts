@@ -1,3 +1,5 @@
+import { IExtractedJD } from "./jobApplication";
+
 export interface JobApplication {
   _id: string;
   company: string;
@@ -10,7 +12,7 @@ export interface JobApplication {
   salary: string;
   jobUrl?: string;
   tags?: string[];
-  description?: string;
+  description?: IExtractedJD;
   applicationDate?: string;
 }
 

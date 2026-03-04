@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "@/lib/auth-client";
+import localFont from "next/font/local";
 // import { getSession } from "@/lib/auth";
 import { User2 } from "lucide-react";
 import {
@@ -9,6 +10,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+
+
+const headingFont = localFont({
+  src:"../../app/fonts/orange.otf",
+})
 
 const navLinks = [
   "Home",
@@ -34,15 +40,15 @@ const Navbar = ({ handleOpenAuth }: HeroSectionProps) => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container mx-auto flex h-16 items-center justify-between">
+      <div className="container relative mx-auto flex h-16 items-center justify-between">
         <a
           href="/"
-          className="text-xl font-bold tracking-tight text-foreground"
+          className={`text-3xl font-bold tracking-tight text-foreground ${headingFont.className}`}
         >
           traq
         </a>
 
-        <nav className="hidden items-center gap-6 md:flex translate-x-15">
+        <nav className="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:flex items-center gap-6">
           {navLinks.map((link) => (
             <a
               key={link}

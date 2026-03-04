@@ -66,11 +66,11 @@ const Sidebar = () => {
         <NavItem 
             icon={SquareKanban} 
             label="Board" 
-            active={true} // Default active state
+            //active={true} // Default active state
         />
         <NavItem 
             icon={TableProperties} 
-            label="Applications" 
+            label="Applications"
         />
         <NavItem 
             icon={Calendar} 

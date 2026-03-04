@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, Link as LinkIcon, Loader2 } from "lucide-react";
+import { scrapeAndSummarizeJD } from "@/lib/actions/scrapper-actions";
+import { IExtractedJD } from "@/lib/models/jobApplication";
 
 interface NewJobDialogProps {
   isOpen: boolean;
@@ -25,6 +27,7 @@ export interface JobFormData {
   location: string;
   link?: string;
   applicationDate?: string;
+  description?: IExtractedJD;
 }
 
 export default function NewJobDialog({
@@ -43,6 +46,11 @@ export default function NewJobDialog({
     location: "",
     link: "",
     applicationDate: "",
+    description: {
+      companyIntro: "",
+      coreResponsibilities: [""],
+      requiredSkills: [""],
+    },
   });
 
   // Reset state when dialog opens
@@ -55,6 +63,11 @@ export default function NewJobDialog({
         location: "",
         link: "",
         applicationDate: "",
+        description: {
+          companyIntro: "",
+          coreResponsibilities: [""],
+          requiredSkills: [""],
+        },
       });
       setUrlInput("");
       setActiveTab("link");
@@ -63,28 +76,44 @@ export default function NewJobDialog({
   }, [isOpen]);
 
   // Simulate fetching data from the URL (Mock Scraper)
-  const handleUrlAnalyze = () => {
+  const handleUrlAnalyze = async () => {
     if (!urlInput) return;
     setIsLoading(true);
 
-    // TODO: Replace this timeout with a real API call to your backend scraper
-    setTimeout(() => {
-      // Mock data extraction based on the URL text (just for demo purposes)
-      const mockCompany = urlInput.includes("linkedin")
-        ? "LinkedIn Job"
-        : "Unknown Company";
-
+    try {
+      const serverActionsData = new FormData();
+      serverActionsData.append("url", urlInput);
+      
+      const { data, error } = await scrapeAndSummarizeJD(null, serverActionsData);
+      if (error || !data) {
+        console.error("Extraction failed. Error: ", error);
+        alert("Could not extract data from this link. Please enter details manually.");
+        setActiveTab("manual");
+        return;
+      }
+      
       setFormData({
-        company: mockCompany,
-        position: "Software Engineer (Imported)",
-        salary: "$120k - $160k",
-        location: "Remote",
+        company: data.companyName || "",
+        position: data.jobTitle || "",
+        salary: data.estimatedSalary || "",
+        location: data.location || "",
         link: urlInput,
-      });
-
+        applicationDate: new Date().toISOString().split("T")[0],
+        description: {
+          companyIntro: data.companyIntro || "",
+          coreResponsibilities: data.coreResponsibilities || [],
+          requiredSkills: data.requiredSkills || [],
+        }
+      })
+      
+      setActiveTab("manual");
+      
+    } catch (err) {
+        console.error("Failed to analyze URL:", err);
+        alert("Something went wrong connecting to the AI.");
+    } finally {
       setIsLoading(false);
-      setActiveTab("manual"); // Switch to manual tab for review
-    }, 1500);
+    }
   };
 
   const handleManualSubmit = (e: React.FormEvent) => {
@@ -231,7 +260,7 @@ export default function NewJobDialog({
                   }
                   className="col-span-3"
                   // placeholder="e.g. 15.02.26"
-                  required
+                  // required
                 />
               </div>
 

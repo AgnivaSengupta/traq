@@ -1,5 +1,28 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+
+export interface IExtractedJD {
+  companyIntro: string | null;
+  coreResponsibilities: string[];
+  requiredSkills: string[];
+}
+
+const extractedJdSchema = new mongoose.Schema({
+  companyIntro: {
+    type: String,
+    default: null
+  },
+  coreResponsibilities: {
+    type: [String],
+    default: []
+  },
+  requiredSkills: {
+    type: [String],
+    default: []
+  },
+}, { _id: false });
+
+
 export interface IJobApplication extends Document {
   company: string;
   position: string;
@@ -14,7 +37,7 @@ export interface IJobApplication extends Document {
   jobUrl?: string;
   applicationDate: Date;
   tags?: string[];
-  description?: string;
+  description?: IExtractedJD;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,7 +72,7 @@ const JobApplicationSchema = new Schema<IJobApplication>({
   jobUrl: { type: String },
   applicationDate: { type: Date },
   tags: [{type: String}],
-  description: { type: String },
+  description: { type: extractedJdSchema },
 }, { timestamps: true });
 
 

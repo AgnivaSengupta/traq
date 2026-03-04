@@ -58,7 +58,7 @@ export default async function Dashboard() {
   if (!session) return <div>Please log in</div>;
 
   const board = await getUserBoardData(session.user.id);
-  console.log(board);
+  // console.log(board);
 
   return (
     <>

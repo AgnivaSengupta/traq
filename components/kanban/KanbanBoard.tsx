@@ -6,7 +6,10 @@ import KanbanColumn from "./KanbanColumn";
 import { BoardData, JobApplication } from "@/lib/models/models.types";
 import NewJobDialog from "./NewJobDialog";
 import { JobFormData } from "./NewJobDialog";
-import { createJobApplication, updateJobStatus } from "@/lib/actions/job.actions";
+import {
+  createJobApplication,
+  updateJobStatus,
+} from "@/lib/actions/job.actions";
 
 // let nextId = 120;
 
@@ -83,6 +86,7 @@ const KanbanBoard = ({ boardData }: Props) => {
         location: jobData.location,
         jobUrl: jobData.link,
         applicationDate: jobData.applicationDate,
+        description: jobData.description,
         status: "applied", // You might want to map activeColumnId to a status name if needed
         order: 0,
         columnId: activeColumnId,
@@ -104,6 +108,7 @@ const KanbanBoard = ({ boardData }: Props) => {
           location: jobData.location,
           jobUrl: jobData.link,
           applicationDate: jobData.applicationDate,
+          description: jobData.description,
           userId: boardData.userId, // <--- Pass User ID from props
           boardId: boardData._id, // <--- Pass Board ID from props
         });
@@ -138,29 +143,34 @@ const KanbanBoard = ({ boardData }: Props) => {
     setDragOverColumn(columnId);
   };
 
-  const handleDrop = useCallback(async (e: React.DragEvent, newColumnId: string) => {
-    e.preventDefault();
-    const jobId = e.dataTransfer.getData("jobId");
-    setApplications((prev) =>
-      prev.map((t) => (t._id === jobId ? { ...t, columnId: newColumnId } : t)),
-    );
-    setDragOverColumn(null);
+  const handleDrop = useCallback(
+    async (e: React.DragEvent, newColumnId: string) => {
+      e.preventDefault();
+      const jobId = e.dataTransfer.getData("jobId");
+      setApplications((prev) =>
+        prev.map((t) =>
+          t._id === jobId ? { ...t, columnId: newColumnId } : t,
+        ),
+      );
+      setDragOverColumn(null);
 
-    // call the server action to save move to mongoDB
-    try {
-      const response = await updateJobStatus(jobId, newColumnId);
+      // call the server action to save move to mongoDB
+      try {
+        const response = await updateJobStatus(jobId, newColumnId);
 
-      if (!response.success) {
-        // Error handling: Revert the move if the DB update failed
-        console.error("Failed to update DB:", response.error);
+        if (!response.success) {
+          // Error handling: Revert the move if the DB update failed
+          console.error("Failed to update DB:", response.error);
 
-        // Optional: you can show a toast notification here "Failed to move card"
-        // and revert the state if critical
+          // Optional: you can show a toast notification here "Failed to move card"
+          // and revert the state if critical
+        }
+      } catch (error) {
+        console.error("Network error updating job:", error);
       }
-    } catch (error) {
-      console.error("Network error updating job:", error);
-    }
-  }, []);
+    },
+    [],
+  );
 
   const handleDragLeave = () => {
     setDragOverColumn(null);
@@ -170,7 +180,9 @@ const KanbanBoard = ({ boardData }: Props) => {
     <div className="flex flex-1 flex-col min-h-screen bg-background">
       {/* Top bar */}
       <header className="flex items-center gap-3 border-b border-border bg-card px-5 py-3">
-        <span className="text-2xl font-serif tracking-wider ml-3">Job Board</span>
+        <span className="text-2xl font-serif tracking-wider ml-3">
+          Job Board
+        </span>
       </header>
 
       {/* Columns */}

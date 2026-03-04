@@ -16,7 +16,7 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ handleOpenAuth }: HeroSectionProps) => {
   return (
-    <section className="container mx-auto px-4 py-30">
+    <section className="container mx-auto px-4 pt-20">
       <div className="flex flex-col items-center mx-auto text-center max-w-4xl">
         <Badge
           variant="secondary"
