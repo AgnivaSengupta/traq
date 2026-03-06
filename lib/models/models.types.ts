@@ -13,6 +13,7 @@ export interface JobApplication {
   jobUrl?: string;
   tags?: string[];
   description?: IExtractedJD;
+  resume?: string;
   applicationDate?: string;
 }
 

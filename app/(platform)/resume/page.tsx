@@ -26,17 +26,21 @@ const MOCK_RESUMES = [
   {
     id: "res-1",
     name: "Software Engineer - Fullstack.pdf",
+    label: "Fullstack",
     version: "v2.1",
     uploadDate: "2026-02-15",
+    validUntil: "2026-06-15",
     fileUrl: "#",
-    usageCount: 12, // How many applications use this resume
+    usageCount: 12,
     tags: ["MERN", "Next.js"],
   },
   {
     id: "res-2",
     name: "Backend Developer - Go.pdf",
+    label: "Backend",
     version: "v1.0",
     uploadDate: "2026-03-01",
+    validUntil: "2026-07-01",
     fileUrl: "#",
     usageCount: 4,
     tags: ["Go", "Microservices"],
@@ -44,8 +48,10 @@ const MOCK_RESUMES = [
   {
     id: "res-3",
     name: "Agniva_Sengupta_SDE_Intern.pdf",
+    label: "Internship",
     version: "v3.0",
     uploadDate: "2026-03-04",
+    validUntil: "2026-09-04",
     fileUrl: "#",
     usageCount: 1,
     tags: ["Internship"],
@@ -55,8 +61,10 @@ const MOCK_RESUMES = [
 interface ResumeProps {
   id: string;
   name: string;
+  label: string;
   version: string;
   uploadDate: string;
+  validUntil: string;
   fileUrl: string;
   usageCount: number;
   tags: string[];

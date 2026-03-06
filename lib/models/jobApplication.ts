@@ -38,6 +38,7 @@ export interface IJobApplication extends Document {
   applicationDate: Date;
   tags?: string[];
   description?: IExtractedJD;
+  resume?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -73,6 +74,11 @@ const JobApplicationSchema = new Schema<IJobApplication>({
   applicationDate: { type: Date },
   tags: [{type: String}],
   description: { type: extractedJdSchema },
+  resume: {
+    type: Schema.Types.ObjectId,
+    ref: "Resume",
+    required: false
+  },
 }, { timestamps: true });
 
 

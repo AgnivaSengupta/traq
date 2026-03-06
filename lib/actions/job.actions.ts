@@ -130,6 +130,7 @@ export async function getUserApplications(userId: string) {
     await connectDB();
     const userApplications = await JobApplication.find({ userId: userId })
       .populate("columnId", "name")
+      .populate("resume", "name")
       .sort({createdAt: -1})
       .lean();
     

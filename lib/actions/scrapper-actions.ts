@@ -9,8 +9,8 @@ const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_KEY,
 });
 
-export async function scrapeAndSummarizeJD(prevState, formData) {
-  const url = formData.get("url");
+export async function scrapeAndSummarizeJD(prevState: any, formData: FormData) {
+  const url = formData.get("url") as string;
 
   if (!url) {
     return { error: "Please provide a valid URL.", data: null };

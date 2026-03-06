@@ -12,11 +12,11 @@ import {
   Briefcase, // For "Job Offers" or similar
   LogOut,
   Sparkles,
-  Triangle,
   HelpCircle,
   Sun,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -62,19 +62,22 @@ const Sidebar = () => {
         <div className="px-2 pb-1 pt-2 text-xs font-medium text-gray-500">
           Tracker
         </div>
-        
-        <NavItem 
-            icon={SquareKanban} 
-            label="Board" 
+
+        <NavItem
+            icon={SquareKanban}
+          label="Board"
+          href="dashboard"
             //active={true} // Default active state
         />
-        <NavItem 
-            icon={TableProperties} 
-            label="Applications"
+        <NavItem
+            icon={TableProperties}
+          label="Applications"
+          href="applications"
         />
-        <NavItem 
-            icon={Calendar} 
-            label="Calendar" 
+        <NavItem
+            icon={Calendar}
+          label="Calendar"
+          href="calendar"
         />
       </nav>
 
@@ -85,9 +88,9 @@ const Sidebar = () => {
         </div>
 
         {/* Removed hierarchy tree lines, just clean list */}
-        <NavItem icon={FileText} label="Resumes" />
-        <NavItem icon={Briefcase} label="Offers & Contracts" />
-        <NavItem icon={Sparkles} label="AI Insights" iconColor="text-purple-600" />
+        <NavItem icon={FileText} label="Resumes" href="resume"/>
+
+
       </div>
 
       {/* Spacer */}
@@ -95,9 +98,9 @@ const Sidebar = () => {
 
       {/* USER & SETTINGS */}
       <div className="flex flex-col gap-0.5 px-2 py-2">
-        <NavItem 
-            icon={Settings} 
-            label="Settings" 
+        <NavItem
+            icon={Settings}
+            label="Settings"
         />
         {/* Modified Favorites style for User Profile */}
          <div className="group flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors text-gray-600 hover:bg-gray-200/50">
@@ -121,7 +124,7 @@ const Sidebar = () => {
              {/* Moon icon placeholder */}
           </button>
         </div>
-        
+
         <span className="ml-auto text-xs text-gray-400/80 font-mono">v1.0.0</span>
       </div>
     </aside>
@@ -135,20 +138,25 @@ function NavItem({
   active,
   badge,
   iconColor,
+  href,
 }: {
   icon?: React.ElementType;
   label: string;
   active?: boolean;
   badge?: string;
   iconColor?: string;
-}) {
+  href: string;
+  }) {
+
+  const router = useRouter();
+
   return (
     <div
-      className={`group flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors ${
-        active
+      className={`group flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors ${active
           ? "bg-[#EAEBED] text-gray-900 font-medium"
           : "text-gray-600 hover:bg-gray-200/50"
-      }`}
+        }`}
+      onClick={ () => router.push(`/${href}`)}
     >
       {Icon && (
         <Icon className={`h-4 w-4 shrink-0 ${iconColor || "text-gray-500"}`} />
