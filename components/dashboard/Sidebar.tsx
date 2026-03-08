@@ -17,6 +17,7 @@ import {
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -42,10 +43,10 @@ const Sidebar = () => {
     <aside className="flex h-screen w-[260px] shrink-0 flex-col border-r border-gray-200 bg-[#F7F8FA] text-gray-700 text-[13px] select-none font-sans">
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3.5 mb-2">
-         {/* Logo mark - kept simple like your original */}
-         <div className="flex h-5 w-5 items-center justify-center rounded bg-black text-white text-[10px] font-bold shadow-sm">
-            t
-         </div>
+        {/* Logo mark - kept simple like your original */}
+        <div className="flex h-5 w-5 items-center justify-center rounded bg-black text-white text-[10px] font-bold shadow-sm">
+          t
+        </div>
         <span className="font-semibold text-base text-gray-800">traq</span>
         <button
           onClick={() => setCollapsed(true)}
@@ -64,21 +65,17 @@ const Sidebar = () => {
         </div>
 
         <NavItem
-            icon={SquareKanban}
+          icon={SquareKanban}
           label="Board"
           href="dashboard"
-            //active={true} // Default active state
+          //active={true} // Default active state
         />
         <NavItem
-            icon={TableProperties}
+          icon={TableProperties}
           label="Applications"
           href="applications"
         />
-        <NavItem
-            icon={Calendar}
-          label="Calendar"
-          href="calendar"
-        />
+        <NavItem icon={Calendar} label="Calendar" href="calendar" />
       </nav>
 
       {/* SECTION 2: ASSETS */}
@@ -88,9 +85,7 @@ const Sidebar = () => {
         </div>
 
         {/* Removed hierarchy tree lines, just clean list */}
-        <NavItem icon={FileText} label="Resumes" href="resume"/>
-
-
+        <NavItem icon={FileText} label="Resumes" href="resume" />
       </div>
 
       {/* Spacer */}
@@ -98,16 +93,32 @@ const Sidebar = () => {
 
       {/* USER & SETTINGS */}
       <div className="flex flex-col gap-0.5 px-2 py-2">
-        <NavItem
-            icon={Settings}
-            label="Settings"
-        />
+        <NavItem icon={Settings} label="Settings" href="settings" />
         {/* Modified Favorites style for User Profile */}
-         <div className="group flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors text-gray-600 hover:bg-gray-200/50">
-            <User className="h-4 w-4 shrink-0 text-gray-500" />
-            <span>Agniva</span>
-            <LogOut className="ml-auto h-3.5 w-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="group flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors text-gray-600 hover:bg-gray-200/50">
+              <User className="h-4 w-4 shrink-0 text-gray-500" />
+              <span>Agniva</span>
+              <LogOut className="ml-auto h-3.5 w-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent className="md:w-50 translate-x-40 translate-y-10">
+            <DropdownMenuLabel className="mb-2">
+              <div>
+                <p className="text-sm">Agniva Sengupta</p>
+                <p className="text-xs text-muted-foreground">agnivasengupta11@gmail.com</p>
+                {/*<p>{session.user.name}</p>*/}
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator/>
+            <DropdownMenuItem onClick={() => signOut()}>
+              <LogOut />
+              Log Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Footer - Kept Exactly as Original */}
@@ -121,11 +132,13 @@ const Sidebar = () => {
             <Sun className="h-3.5 w-3.5" />
           </button>
           <button className="p-0.5 rounded-full text-gray-400">
-             {/* Moon icon placeholder */}
+            {/* Moon icon placeholder */}
           </button>
         </div>
 
-        <span className="ml-auto text-xs text-gray-400/80 font-mono">v1.0.0</span>
+        <span className="ml-auto text-xs text-gray-400/80 font-mono">
+          v1.0.0
+        </span>
       </div>
     </aside>
   );
@@ -146,17 +159,17 @@ function NavItem({
   badge?: string;
   iconColor?: string;
   href: string;
-  }) {
-
+}) {
   const router = useRouter();
 
   return (
     <div
-      className={`group flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors ${active
+      className={`group flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors ${
+        active
           ? "bg-[#EAEBED] text-gray-900 font-medium"
           : "text-gray-600 hover:bg-gray-200/50"
-        }`}
-      onClick={ () => router.push(`/${href}`)}
+      }`}
+      onClick={() => router.push(`/${href}`)}
     >
       {Icon && (
         <Icon className={`h-4 w-4 shrink-0 ${iconColor || "text-gray-500"}`} />

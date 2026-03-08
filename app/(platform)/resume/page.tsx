@@ -11,6 +11,7 @@ import {
   Briefcase,
   Download,
   File,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button"; // Adjust path to your Shadcn buttons
 import { Badge } from "@/components/ui/badge";
@@ -157,9 +158,16 @@ export default function ResumeVaultPage() {
       </header>
 
       <div className="flex flex-col p-10 w-[80%] mx-auto">
-        <h1 className="font-serif font-semibold text-xl tracking-wider mb-4">
-          Versions
-        </h1>
+        <div className="flex justify-between">        
+          <h1 className="font-serif font-semibold text-xl tracking-wider mb-4">
+            Versions
+          </h1>
+          
+          <Button variant='outline' className="cursor-pointer">
+            <Plus />
+            Add Resume
+          </Button>
+        </div>
         <div className="h-full bg-secondary rounded-md p-2">
           <div className="flex flex-col gap-2">
             {resumes.map((resume, index) => (
