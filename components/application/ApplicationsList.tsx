@@ -106,6 +106,13 @@ export default function ApplicationsList({
     <div className="flex flex-col  overflow-y-auto bg-secondary ml-3 p-4 gap-2 rounded-md">
       {userApplications.map((job) => {
         const isSelected = selectedJobId === job._id;
+        const formattedDate = job.applicationDate
+          ? new Date(job.applicationDate).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })
+          : null;
 
         return (
           <div
@@ -122,7 +129,7 @@ export default function ApplicationsList({
                 {job.position}
               </h3>
               <span className="text-xs text-blue-600 font-dmsans font-medium whitespace-nowrap ml-3">
-                {job.applicationDate}
+                {formattedDate}
               </span>
             </div>
 

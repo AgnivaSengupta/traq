@@ -31,3 +31,16 @@ export interface BoardData {
   name: string;
   columns: Column[];
 }
+
+export interface Resume {
+  _id: string;
+  userId: string;
+  name: string;
+  fileKey: string;
+  version: number;
+  label?: string;
+  fileUrl: string;
+  tags?: string[];
+  isActive: boolean;
+}
+

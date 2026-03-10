@@ -7,6 +7,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Add to globals.css */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+@keyframes slide {
+  0% { transform: translateX(-10%); }
+  100% { transform: translateX(250%); }
+}
+
 @theme {
     /*Font*/
     
