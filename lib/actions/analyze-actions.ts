@@ -4,8 +4,10 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import z from "zod";
 import connectDB from "../db";
 import { JobApplication } from "../models";
-import  PdfParse from "pdf-parse";
+// import  PdfParse from "pdf-parse";
+import { extractText } from "unpdf";
 import { generateObject } from "ai";
+import { getFileViewUrl } from "./upload";
 
 const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_KEY });
 
@@ -24,21 +26,28 @@ const AnalyzeSchema = z.object({
       suggestedRewrite: z.string().describe("The optimized, ATS-friendly rewrite of that bullet"),
       reasoning: z.string().describe("Why this rewrite is better")
     })).max(10)
-})
+}) 
 
 
 export async function analyzeResumeMatch(jobId: string) {
   try {
     await connectDB();
     
-    const job = await JobApplication.findById(jobId).populate("resumeId");
+    const job = await JobApplication.findById(jobId).populate("resume");
     if (!job) throw new Error("Job Application not found");
-    if (!job.resumeId || !job.resumeId.fileUrl) throw new Error("No resume linked!");
+    if (!job.resume || !job.resume.fileKey) throw new Error("No resume linked!");
     
-    const response = await fetch(job.resumeId.fileUrl);
+    const urlResult = await getFileViewUrl(job.resume.fileKey);
+        if (!urlResult.success || !urlResult.url) {
+          throw new Error("Failed to access the resume file in secure storage.");
+        }
+    
+    const response = await fetch(urlResult.url);
+    if (!response.ok) throw new Error("Failed to download PDF from S3.");
+    
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const pdfData = await PdfParse(buffer);
+    
+    const pdfData = await extractText(new Uint8Array(arrayBuffer));
     const resumeText = pdfData.text;
     
     const jdContext = `
@@ -49,7 +58,7 @@ export async function analyzeResumeMatch(jobId: string) {
       `;
   
     const { object: analysisResult } = await generateObject({
-          model: openrouter.chat("google/gemini-2.5-flash"), 
+          model: openrouter.chat('arcee-ai/trinity-large-preview:free'), 
           schema: AnalyzeSchema,
           prompt: `
             You are an expert technical recruiter and ATS parsing software.

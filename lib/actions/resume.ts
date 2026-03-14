@@ -6,6 +6,7 @@ import connectDB from "../db";
 import Resume from "../models/resume";
 import { headers } from "next/headers";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { JobApplication } from "../models";
 
 const S3 = new S3Client({
   region: "auto",
@@ -133,5 +134,38 @@ export async function deleteResume(resumeId: string) {
   } catch (error) {
     console.error("Error deleting resume:", error);
     return { error: "Failed to delete resume." };
+  }
+}
+
+
+export async function linkResume(resumeId: string, jobId: string) {
+  try {
+    const session = await getSession();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    await connectDB();
+
+    // double checking the resume exists and belongs to the user
+    const resume = await Resume.findOne({
+      _id: resumeId,
+      userId: session.user.id,
+    });
+
+    if (!resume) return { error: "Resume not found or unauthorized." };
+
+    // double checking the job exists
+    const job = await JobApplication.findOne({ _id: jobId });
+    if (!job) return { error: "Job not found." };
+
+    // linking the resume to the job
+    // await resume.updateOne({ $addToSet: { linkedJobs: jobId } });
+    await job.updateOne({ $set: { resume: resumeId } });
+    
+    revalidatePath("/applications");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error linking resume:", error);
+    return { error: "Failed to link resume." };
   }
 }

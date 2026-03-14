@@ -1,5 +1,5 @@
 "use server";
-import { JobApplication, Column } from "../models";
+import { JobApplication, Column, Resume } from "../models";
 import connectDB from "../db";
 import { revalidatePath } from "next/cache";
 import { IExtractedJD } from "../models/jobApplication";
@@ -138,5 +138,13 @@ export async function getUserApplications(userId: string) {
   } catch (error) {
     console.log("Error fetching the data: ", error);
     return {success: false, error: "Failed to fetch data"}
+  }
+}
+
+export async function getJDAnalysis(jobId: string) {
+  try {
+    
+  } catch (error) {
+    
   }
 }

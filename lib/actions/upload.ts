@@ -26,7 +26,7 @@ export async function generateUploadUrl(fileName: string, contentType: string, e
     });
 
     // generating the getSignedUrl
-    const signedUrl = await getSignedUrl(S3, command, { expiresIn: 60 }); 
+    const signedUrl = await getSignedUrl(S3, command, { expiresIn: 600 }); 
 
     return {
       success: true,
