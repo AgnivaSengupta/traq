@@ -34,11 +34,48 @@ import {
 import { getUserResumes, linkResume } from "@/lib/actions/resume";
 import { analyzeResumeMatch } from "@/lib/actions/analyze-actions";
 
-export interface userApplications extends Omit<JobApplication, "columnId"> {
+// 1. Define the shape of the AI analysis so TypeScript can autocomplete it
+export interface IAnalysisResult {
+  matchScore: number;
+  summary: string;
+  matchedSkills: string[];
+  missingSkills: string[];
+  requirementAssessments: {
+    requirementText: string;
+    category: "responsibility" | "skill";
+    status: "matched" | "partial" | "missing";
+    resumeEvidence: string[];
+    confidence: number;
+  }[];
+  bulletSuggestions: {
+    originalQuote: string;
+    matchedRequirement: string;
+    changeType: "missing_keyword" | "clarify_impact" | "quantify_result";
+    suggestedRewrite: string;
+    reasoning: string;
+    confidence: number;
+  }[];
+}
+
+// 2. Extend your userApplications to include the populated fields
+export interface userApplications extends Omit<JobApplication, "columnId" | "resume"> {
   columnId: {
     _id: string;
     name: string;
   };
+  // We omit the original "resume" and redefine it here as a populated object
+  resume?: {
+    _id: string;
+    name: string;
+  };
+  // Add our new AI tracking fields!
+  analysisResult?: IAnalysisResult;
+  analyzedResumeId?: string;
+  analysisFingerprint?: string | null;
+  analysisJdFingerprint?: string | null;
+  analyzedResumeFileKey?: string | null;
+  applicationDate?: string | null;
+  lastAnalyzedAt?: string | null;
 }
 
 interface Props {
@@ -146,17 +183,21 @@ export default function ApplicationsView({ initialApplications }: Props) {
       // 1. Find the current job to do some quick checks
       const currentJob = initialApplications.find(j => j._id === selectedJobId);
   
-      // 2. UX/Cost Check: If it's already analyzed, skip the API call and just route!
-      if (currentJob?.analysisResult) {
-        router.push(`/applications/${selectedJobId}/analyze`);
-        return;
-      }
-  
       // 3. Validation Check: They must link a resume before analyzing
       if (!currentJob?.resume) {
         alert("Please link a resume to this job before analyzing.");
         return;
       }
+      // 2. Fast path: if an analysis already exists for the linked resume,
+      // open it directly instead of asking the server to recompute.
+      if (
+        currentJob?.analysisResult &&
+        currentJob.analyzedResumeId === currentJob.resume._id
+      ) {
+        router.push(`/applications/${selectedJobId}/analyze`);
+        return;
+      }
+  
   
       // 4. Trigger the loading animations
       setIsAnalyzing(true);
@@ -166,6 +207,8 @@ export default function ApplicationsView({ initialApplications }: Props) {
         const response = await analyzeResumeMatch(selectedJobId);
   
         if (response.success) {
+          // Refresh the router to get fresh data with analysisResult for next time
+          router.refresh();
           // Once the AI is done and saved to the DB, route to the new page!
           router.push(`/applications/${selectedJobId}/analyze`);
         } else {
@@ -217,16 +260,12 @@ export default function ApplicationsView({ initialApplications }: Props) {
   }, [fetchResumes]);
 
   const selectedJob = filteredJobs.find((job) => job._id === selectedJobId);
-  const selectedResumeName = resumes.find(
-    (r) => r._id === selectedVaultResumeId,
-  )?.name;
-
   return (
     <div className="flex flex-1 gap-2 overflow-x-hidden">
       <div className="w-[50%]">
         <Header tabs={TABS} activetab={activeTab} onTabChange={setActiveTab} />
 
-        <div className="overflow-y-auto h-[calc(100vh-150px)]">
+        <div className="overflow-y-auto h-[calc(100vh-150px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <ApplicationsList
             userApplications={filteredJobs}
             selectedJobId={selectedJobId}

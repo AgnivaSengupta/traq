@@ -23,7 +23,7 @@ export default async function ApplicationPage() {
   
 
   return (
-    <div className="flex flex-1 flex-col min-h-screen bg-background">
+    <div className="flex flex-1 flex-col h-screen bg-background">
       {/* Top bar */}
       <header className="flex items-center gap-3 border-b border-border bg-card px-5 py-3">
         <span className="text-2xl font-serif tracking-wider ml-3">

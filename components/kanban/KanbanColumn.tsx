@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from "react";
 import { Plus, MoreHorizontal } from "lucide-react";
 // import type { Task, TaskStatus } from "@/data/kanban";
 import TaskCard from "./TaskCard";
@@ -65,7 +64,7 @@ const KanbanColumn = ({
 
   return (
     <div
-      className={`flex min-w-[300px] flex-1 flex-col p-3 rounded-sm transition-colors bg-[#F8F8F6] ${
+      className={`flex min-w-[300px] flex-1 flex-col overflow-visible rounded-sm bg-[#F8F8F6] p-3 transition-colors ${
         isDragOver ? "bg-kanban-bg/80 ring-2 ring-kanban-progress/30" : ""
       }`}
       onDragOver={onDragOver}
@@ -89,7 +88,7 @@ const KanbanColumn = ({
         </div>
       </div>
 
-      <div className="bg-[#EFEFED] h-full rounded-sm p-2">
+      <div className="h-full overflow-visible rounded-sm bg-[#EFEFED] p-2">
         {/* New task form */}
         {/*{isAdding && (
           <div className="mb-2.5 rounded-lg border border-kanban-progress/40 bg-card p-3 shadow-sm">
@@ -133,7 +132,7 @@ const KanbanColumn = ({
         )}*/}
 
         {/* Cards */}
-        <div className="flex flex-col gap-2.5 pb-4">
+        <div className="flex flex-col gap-2 pb-4">
           {jobs.map((job) => (
             <TaskCard key={job._id} job={job} onDragStart={onDragStart} />
           ))}

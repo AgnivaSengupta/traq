@@ -38,6 +38,13 @@ export const auth = betterAuth({
     },
   },
   // plugins: [nextCookies()]
+  additionalFields: {
+    profilePic: {
+      type: "string",
+      optional: true,
+      defaultValue: "",
+    },
+  },
 });
 
 export async function getSession() {

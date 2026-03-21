@@ -1,10 +1,10 @@
 "use client"; // Ensure this is a client component
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import {
   Calendar,
   Delete,
-  DollarSign,
   MapPin,
   MoreHorizontal,
   Pen,
@@ -79,94 +79,100 @@ const TaskCard = ({ job, onDragStart }: TaskCardProps) => {
       <div
         draggable
         onDragStart={(e) => onDragStart(e, job._id)}
-        className="group relative cursor-grab rounded-lg border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing active:shadow-lg active:opacity-80"
+        className={cn(
+          "task-card-shell group relative cursor-grab overflow-hidden rounded-lg border border-border/80 bg-card px-3 py-2 shadow-sm",
+          "hover:border-border hover:shadow-md focus-within:border-border focus-within:shadow-md",
+          "active:cursor-grabbing active:shadow-lg active:opacity-80 motion-reduce:transition-none",
+        )}
       >
-        <div className="flex justify-between">
-          <div className="flex items-center gap-1">
+        <div className="flex min-h-6 items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <div
-              className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
               style={{ backgroundColor: avatarColor }}
             >
               {initials}
             </div>
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="truncate text-xs font-medium text-muted-foreground">
               {job.company}
             </span>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              {/* Added onMouseDown stopPropagation so clicking menu doesn't start drag */}
-              <button 
-                onMouseDown={(e) => e.stopPropagation()}
-                className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
-            </DropdownMenuTrigger>
+          <div className="task-card-menu shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent"
+                  aria-label={`Open actions for ${job.company}`}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                <Pen className="w-2 h-2 mr-2" />
-                Edit
-              </DropdownMenuItem>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                  <Pen className="mr-2 h-2 w-2" />
+                  Edit
+                </DropdownMenuItem>
 
-              {/* 4. Change Delete Item to open the Dialog instead of deleting immediately */}
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDeleteDialog(true);
-                }}
-              >
-                <Delete className="w-2 h-2 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteDialog(true);
+                  }}
+                >
+                  <Delete className="mr-2 h-2 w-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
-        <p className="mt-3 ml-1 text-base font-medium leading-snug text-foreground">
-          {job.position}
-        </p>
+        <div className="task-card-extra pointer-events-none mt-3 space-y-3 group-hover:pointer-events-auto group-focus-within:pointer-events-auto">
+          <p className="ml-1 text-base font-medium leading-snug text-foreground">
+            {job.position}
+          </p>
 
-        <div className="flex justify-between items-center mt-4 mb-2">
-          <Badge
-            variant="secondary"
-            className="rounded-sm text-xs bg-blue-400/30"
-          >
-            Internship
-          </Badge>
-
-          {formattedDate && (
-            <Badge variant="link" className="text-xs text-red-800 p-0 h-auto">
-              <Calendar className="h-3 w-3 mr-1" />
-              {formattedDate}
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <Badge
+              variant="secondary"
+              className="rounded-sm bg-blue-400/30 text-xs"
+            >
+              Internship
             </Badge>
-          )}
-        </div>
 
-        <div className="w-full h-[0.25px] bg-zinc-300/50 "></div>
-
-        {(job.location || job.salary) && (
-          <div className="flex justify-between mt-2 ">
-            {job.location && (
-              <div className="flex items-center text-[10px] text-muted-foreground bg-gray-100 px-1.5 py-0.5 rounded">
-                <MapPin className="w-3 h-3 mr-1" />
-                {job.location}
-              </div>
-            )}
-            {job.salary && (
-              <div className="flex items-center text-[10px] text-green-700 bg-green-50 px-1.5 py-0.5 rounded">
-                <Wallet className="w-3 h-3 mr-1" />
-                {job.salary}
-              </div>
+            {formattedDate && (
+              <Badge variant="link" className="h-auto p-0 text-xs text-red-800">
+                <Calendar className="mr-1 h-3 w-3" />
+                {formattedDate}
+              </Badge>
             )}
           </div>
-        )}
+
+          <div className="h-[0.25px] w-full bg-zinc-300/50"></div>
+
+          {(job.location || job.salary) && (
+            <div className="flex flex-wrap justify-between gap-2">
+              {job.location && (
+                <div className="flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                  <MapPin className="mr-1 h-3 w-3" />
+                  <span className="truncate">{job.location}</span>
+                </div>
+              )}
+              {job.salary && (
+                <div className="flex items-center rounded bg-green-50 px-1.5 py-0.5 text-[10px] text-green-700">
+                  <Wallet className="mr-1 h-3 w-3" />
+                  <span className="truncate">{job.salary}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* 5. The Alert Dialog Component */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

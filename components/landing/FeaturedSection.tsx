@@ -1,21 +1,51 @@
-import { Briefcase, FileText, Bell } from "lucide-react";
+import { Briefcase, FileText, Bell, ScanSearch } from "lucide-react";
+
+// const features = [
+//   {
+//     icon: Briefcase,
+//     title: "Application Tracking",
+//     description:
+//       "Track every application from wishlist to offer with a visual kanban board.",
+//   },
+//   {
+//     icon: FileText,
+//     title: "Resume Builder — Coming Soon",
+//     description:
+//       "Create tailored resumes in minutes with smart templates and AI suggestions.",
+//   },
+//   {
+//     icon: Bell,
+//     title: "Reminders",
+//     description:
+//       "Never miss a deadline with smart notifications for follow-ups and interviews.",
+//   },
+// ];
 
 const features = [
   {
     icon: Briefcase,
     title: "Application Tracking",
-    description: "Track every application from wishlist to offer with a visual kanban board.",
+    description:
+      "Manage each opportunity from first save to final decision with a clear board built for active pipelines.",
   },
   {
     icon: FileText,
-    title: "Resume Builder — Coming Soon",
-    description: "Create tailored resumes in minutes with smart templates and AI suggestions.",
+    title: "Resume Management",
+    description:
+      "Store polished resume variants, keep them organized, and attach the right version to every role.",
   },
   {
-    icon: Bell,
-    title: "Reminders",
-    description: "Never miss a deadline with smart notifications for follow-ups and interviews.",
+    icon: ScanSearch,
+    title: "Fit Analysis",
+    description:
+      "Review how your resume maps to a job description with grounded analysis and evidence-backed suggestions.",
   },
+  // {
+  //   icon: Bell,
+  //   title: "Follow-up Visibility",
+  //   description:
+  //     "Keep deadlines, interviews, and next steps visible so important actions do not slip through the cracks.",
+  // },
 ];
 
 const FeaturesSection = () => {
@@ -38,8 +68,12 @@ const FeaturesSection = () => {
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
                 <feature.icon className="h-5 w-5 text-foreground" />
               </div>
-              <h3 className="mb-2 text-sm font-semibold text-foreground">{feature.title}</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">{feature.description}</p>
+              <h3 className="mb-2 text-sm font-semibold text-foreground">
+                {feature.title}
+              </h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>

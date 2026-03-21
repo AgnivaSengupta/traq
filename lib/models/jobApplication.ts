@@ -10,15 +10,21 @@ export interface IAnalysisResult {
   matchScore: number;
   summary: string;
   matchedSkills: string[];
-  missingKeywords: string[];
-  jdResponsibilities: {
-    text: string;
-    matched: boolean;
+  missingSkills: string[];
+  requirementAssessments: {
+    requirementText: string;
+    category: "responsibility" | "skill";
+    status: "matched" | "partial" | "missing";
+    resumeEvidence: string[];
+    confidence: number;
   }[];
   bulletSuggestions: {
-    originalConcept: string;
+    originalQuote: string;
+    matchedRequirement: string;
+    changeType: "missing_keyword" | "clarify_impact" | "quantify_result";
     suggestedRewrite: string;
     reasoning: string;
+    confidence: number;
   }[];
 }
 
@@ -57,6 +63,10 @@ export interface IJobApplication extends Document {
   description?: IExtractedJD;
   resume?: mongoose.Types.ObjectId;
   analysisResult?: IAnalysisResult;
+  analyzedResumeId?: mongoose.Types.ObjectId;
+  analysisFingerprint?: string;
+  analysisJdFingerprint?: string;
+  analyzedResumeFileKey?: string;
   lastAnalyzedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -112,6 +122,27 @@ const JobApplicationSchema = new Schema<IJobApplication>(
     analysisResult: {
       type: Object, // We can store the raw JSON object here
       required: false,
+    },
+    analyzedResumeId: { // <--- NEW FIELD
+        type: Schema.Types.ObjectId,
+        ref: "Resume",
+        required: false,
+        default: null
+      },
+    analysisFingerprint: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    analysisJdFingerprint: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    analyzedResumeFileKey: {
+      type: String,
+      required: false,
+      default: null,
     },
     lastAnalyzedAt: {
       type: Date,

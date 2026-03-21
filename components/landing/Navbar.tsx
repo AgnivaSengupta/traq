@@ -19,17 +19,11 @@ const headingFont = localFont({
 })
 
 const navLinks = [
-  "Home",
-  "Features",
-  "How It Works",
-  "Pricing",
-  "Testimonials",
-  "FAQ",
+  { label: "Home", href: "#home" },
+  { label: "Product", href: "#product" },
+  { label: "Features", href: "#features" },
+  { label: "Security", href: "#security" },
 ];
-
-interface NavbarProps {
-  onGetStarted?: () => void;
-}
 
 type AuthType = "signin" | "signup";
 
@@ -38,26 +32,26 @@ interface HeroSectionProps {
 }
 
 const Navbar = ({ handleOpenAuth }: HeroSectionProps) => {
-  const { data: session, isPending } = useSession();
+  const { data: session } = useSession();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container relative mx-auto flex h-16 items-center justify-between px-4 md:px-1">
-        <a
+      <div className="container relative mx-auto flex h-16 items-center justify-between px-4 md:px-2">
+        <Link
           href="/"
           className={`text-3xl font-bold tracking-tight text-foreground ${headingFont.className}`}
         >
           traq
-        </a>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-6 mx-auto">
           {navLinks.map((link) => (
             <a
-              key={link}
-              href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
+              key={link.label}
+              href={link.href}
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              {link}
+              {link.label}
             </a>
           ))}
         </nav>
@@ -105,7 +99,7 @@ const Navbar = ({ handleOpenAuth }: HeroSectionProps) => {
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem asChild>
-                    <Link href='settings'>
+                    <Link href='/settings'>
                       <Settings />
                       Settings
                     </Link>

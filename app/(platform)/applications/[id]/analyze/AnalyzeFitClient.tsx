@@ -1,51 +1,201 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, XCircle, Sparkles, UploadCloud, Target, TerminalSquare } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  RefreshCw,
+  Sparkles,
+  Target,
+  TerminalSquare,
+  UploadCloud,
+  XCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { analyzeResumeMatch } from "@/lib/actions/analyze-actions";
+
+type RequirementAssessment = {
+  requirementText: string;
+  category: "responsibility" | "skill";
+  status: "matched" | "partial" | "missing";
+  resumeEvidence: string[];
+  confidence: number;
+};
+
+type BulletSuggestion = {
+  originalQuote: string;
+  matchedRequirement: string;
+  changeType: "missing_keyword" | "clarify_impact" | "quantify_result";
+  suggestedRewrite: string;
+  reasoning: string;
+  confidence: number;
+};
+
+type LegacyAnalysisResult = {
+  matchScore?: number;
+  summary?: string;
+  matchedSkills?: string[];
+  missingSkills?: string[];
+  missingKeywords?: string[];
+  jdResponsibilities?: { text: string; matched: boolean }[];
+  bulletSuggestions?: {
+    originalConcept?: string;
+    originalQuote?: string;
+    suggestedRewrite?: string;
+    reasoning?: string;
+    matchedRequirement?: string;
+    changeType?: BulletSuggestion["changeType"];
+    confidence?: number;
+  }[];
+  requirementAssessments?: RequirementAssessment[];
+};
 
 interface AnalyzeFitClientProps {
   jobData: {
     _id: string;
     company: string;
     position: string;
-    analysisResult: {
-      matchScore: number;
-      summary: string;
-      matchedSkills: string[];
-      missingSkills: string[]; 
-      jdResponsibilities: { text: string; matched: boolean; }[];
-      bulletSuggestions: { originalConcept: string; suggestedRewrite: string; reasoning: string; }[];
-    }
+    analysisResult: LegacyAnalysisResult;
+  };
+}
+
+function getScoreColor(score: number) {
+  if (score >= 80) return "text-green-500 stroke-green-500";
+  if (score >= 60) return "text-orange-500 stroke-orange-500";
+  return "text-red-500 stroke-red-500";
+}
+
+function getRequirementClasses(status: RequirementAssessment["status"]) {
+  if (status === "matched") {
+    return {
+      container: "bg-green-50/50 border-green-100",
+      icon: <CheckCircle2 className="w-5 h-5 text-green-500" />,
+      text: "text-foreground",
+      pill: "bg-green-100 text-green-700",
+      label: "Matched",
+    };
   }
+
+  if (status === "partial") {
+    return {
+      container: "bg-orange-50/40 border-orange-100",
+      icon: <div className="w-5 h-5 rounded-full border-2 border-orange-300" />,
+      text: "text-foreground",
+      pill: "bg-orange-100 text-orange-700",
+      label: "Partial",
+    };
+  }
+
+  return {
+    container: "bg-muted/30 border-dashed border-border",
+    icon: <XCircle className="w-5 h-5 text-red-400" />,
+    text: "text-muted-foreground",
+    pill: "bg-red-100 text-red-700",
+    label: "Missing",
+  };
+}
+
+function getSuggestionLabel(changeType: BulletSuggestion["changeType"]) {
+  if (changeType === "clarify_impact") return "Clarify impact";
+  if (changeType === "quantify_result") return "Quantify result";
+  return "Keyword alignment";
+}
+
+function normalizeAnalysisResult(analysisResult: LegacyAnalysisResult) {
+  const requirementAssessments =
+    analysisResult.requirementAssessments ??
+    [
+      ...(analysisResult.jdResponsibilities || []).map((requirement) => ({
+        requirementText: requirement.text,
+        category: "responsibility" as const,
+        status: requirement.matched ? ("matched" as const) : ("missing" as const),
+        resumeEvidence: [],
+        confidence: requirement.matched ? 0.8 : 0.55,
+      })),
+      ...(analysisResult.matchedSkills || []).map((skill) => ({
+        requirementText: skill,
+        category: "skill" as const,
+        status: "matched" as const,
+        resumeEvidence: [],
+        confidence: 0.8,
+      })),
+      ...((analysisResult.missingSkills || analysisResult.missingKeywords || []).map((skill) => ({
+        requirementText: skill,
+        category: "skill" as const,
+        status: "missing" as const,
+        resumeEvidence: [],
+        confidence: 0.55,
+      })) ?? []),
+    ];
+
+  const bulletSuggestions = (analysisResult.bulletSuggestions || []).map(
+    (suggestion) => ({
+      originalQuote: suggestion.originalQuote || suggestion.originalConcept || "",
+      matchedRequirement:
+        suggestion.matchedRequirement || "Resume alignment",
+      changeType: suggestion.changeType || "clarify_impact",
+      suggestedRewrite: suggestion.suggestedRewrite || "",
+      reasoning: suggestion.reasoning || "Legacy suggestion",
+      confidence: suggestion.confidence ?? 0.7,
+    }),
+  );
+
+  return {
+    matchScore: analysisResult.matchScore ?? 0,
+    summary: analysisResult.summary || "No summary available yet.",
+    matchedSkills: analysisResult.matchedSkills || [],
+    missingSkills:
+      analysisResult.missingSkills || analysisResult.missingKeywords || [],
+    requirementAssessments,
+    bulletSuggestions: bulletSuggestions.filter(
+      (suggestion) => suggestion.originalQuote && suggestion.suggestedRewrite,
+    ),
+  };
 }
 
 export default function AnalyzeFitClient({ jobData }: AnalyzeFitClientProps) {
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const router = useRouter();
-    
-    // Now jobData will safely exist!
-  const data = jobData.analysisResult;
-  
-  // Calculate SVG stroke array for the circular progress gauge
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      const response = await analyzeResumeMatch(jobData._id, true);
+      if (response.success) {
+        router.refresh();
+      } else {
+        alert(response.error || "Failed to regenerate");
+      }
+    } catch (error) {
+      alert("Failed to regenerate");
+      console.error(error);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const data = normalizeAnalysisResult(jobData.analysisResult);
+  const responsibilityAssessments = data.requirementAssessments.filter(
+    (requirement) => requirement.category === "responsibility",
+  );
+  const skillAssessments = data.requirementAssessments.filter(
+    (requirement) => requirement.category === "skill",
+  );
+
   const radius = 45;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (data.matchScore / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (data.matchScore / 100) * circumference;
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-500 stroke-green-500";
-    if (score >= 60) return "text-orange-500 stroke-orange-500";
-    return "text-red-500 stroke-red-500";
-  };
-  
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      
-      <header className="flex justify-between items-center gap-3 border-b border-border bg-card px-5 py-3 shrink-0">
+    <div className="flex h-screen flex-col bg-background">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-5 py-3">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => router.back()}
             className="hover:bg-muted"
           >
@@ -53,144 +203,275 @@ export default function AnalyzeFitClient({ jobData }: AnalyzeFitClientProps) {
           </Button>
           <div>
             <h1 className="text-lg font-serif tracking-wide text-foreground">
-              {/* 3. Use the real job position and company */}
-              {jobData.position} <span className="text-muted-foreground">@ {jobData.company}</span>
+              {jobData.position}{" "}
+              <span className="text-muted-foreground">@ {jobData.company}</span>
             </h1>
-            <p className="text-sm text-muted-foreground font-dmsans">
+            <p className="font-dmsans text-sm text-muted-foreground">
               Resume Analysis & Tailoring Guide
             </p>
           </div>
         </div>
-        
-        <Button variant='outline' className="flex items-center gap-2 cursor-pointer">
-          <UploadCloud className="w-4 h-4" />
-          Upload Tailored Resume
-        </Button>
+
+        <div className="flex gap-2">
+          <Button
+            variant="default"
+            onClick={handleRegenerate}
+            disabled={isRegenerating}
+            className="flex cursor-pointer items-center gap-2"
+          >
+            <RefreshCw
+              className={`w-4 h-4 ${isRegenerating ? "animate-spin" : ""}`}
+            />
+            {isRegenerating ? "Analyzing..." : "Regenerate Analysis"}
+          </Button>
+          <Button variant="outline" className="flex cursor-pointer items-center gap-2">
+            <UploadCloud className="w-4 h-4" />
+            Upload Tailored Resume
+          </Button>
+        </div>
       </header>
 
-      {/* --- Main Split Pane --- */}
-      <div className="flex flex-1 gap-6 p-6 overflow-hidden h-[calc(100vh-80px)] max-w-[1600px] mx-auto w-full">
-        
-        {/* LEFT PANE: The Target (JD Context) */}
-        <div className="w-[40%] flex flex-col bg-card border border-border rounded-md overflow-hidden shadow-sm">
-          <div className="bg-muted/30 px-6 py-4 border-b border-border shrink-0">
-            <h2 className="font-serif text-lg font-medium flex items-center gap-2">
+      <div className="mx-auto flex h-[calc(100vh-80px)] w-full max-w-[1600px] flex-1 gap-6 overflow-hidden p-6">
+        <div className="flex w-[40%] flex-col overflow-hidden rounded-md border border-border bg-card shadow-sm">
+          <div className="shrink-0 border-b border-border bg-muted/30 px-6 py-4">
+            <h2 className="flex items-center gap-2 font-serif text-lg font-medium">
               <Target className="w-5 h-5 text-muted-foreground" />
               The Target
             </h2>
           </div>
-          
-          <div className="p-6 overflow-y-auto flex-1 space-y-8 pr-4">
+
+          <div className="flex-1 space-y-8 overflow-y-auto p-6 pr-4">
             <section>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Core Responsibilities</h3>
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Responsibilities
+              </h3>
               <div className="space-y-4 font-dmsans">
-                {data.jdResponsibilities.map((resp, i) => (
-                  <div key={i} className={`flex gap-3 p-3 rounded-lg border ${resp.matched ? 'bg-green-50/50 border-green-100' : 'bg-muted/30 border-dashed border-border'}`}>
-                    <div className="mt-0.5 shrink-0">
-                      {resp.matched ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30" />
-                      )}
+                {responsibilityAssessments.map((requirement, index) => {
+                  const styles = getRequirementClasses(requirement.status);
+                  return (
+                    <div
+                      key={`${requirement.requirementText}-${index}`}
+                      className={`rounded-lg border p-3 ${styles.container}`}
+                    >
+                      <div className="flex gap-3">
+                        <div className="mt-0.5 shrink-0">{styles.icon}</div>
+                        <div className="flex-1">
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <p className={`text-sm leading-relaxed ${styles.text}`}>
+                              {requirement.requirementText}
+                            </p>
+                            <span
+                              className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${styles.pill}`}
+                            >
+                              {styles.label}
+                            </span>
+                          </div>
+                          {requirement.resumeEvidence.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Resume Evidence
+                              </p>
+                              {requirement.resumeEvidence.map((quote) => (
+                                <div
+                                  key={quote}
+                                  className="rounded-md bg-background/70 px-3 py-2 text-sm text-muted-foreground"
+                                >
+                                  {quote}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <p className={`text-sm leading-relaxed ${resp.matched ? 'text-foreground' : 'text-muted-foreground'}`}>
-                      {resp.text}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
+              </div>
+            </section>
+
+            <section>
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Skills Review
+              </h3>
+              <div className="space-y-3">
+                {skillAssessments.map((requirement, index) => {
+                  const styles = getRequirementClasses(requirement.status);
+                  return (
+                    <div
+                      key={`${requirement.requirementText}-${index}`}
+                      className="flex items-center justify-between rounded-md border border-border bg-background/60 px-3 py-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          {requirement.requirementText}
+                        </p>
+                        {requirement.resumeEvidence[0] && (
+                          <p className="mt-1 truncate text-xs text-muted-foreground">
+                            Evidence: {requirement.resumeEvidence[0]}
+                          </p>
+                        )}
+                      </div>
+                      <span
+                        className={`ml-3 shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${styles.pill}`}
+                      >
+                        {styles.label}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </section>
           </div>
         </div>
 
-        {/* RIGHT PANE: The Analysis & Refactor */}
-        <div className="w-[60%] flex flex-col bg-card border border-border rounded-md overflow-hidden shadow-sm">
-          <div className="bg-orange-50/50 px-6 py-4 border-b border-orange-100 shrink-0 flex items-center justify-between">
-            <h2 className="font-serif text-lg font-medium text-orange-900 flex items-center gap-2">
+        <div className="flex w-[60%] flex-col overflow-hidden rounded-md border border-border bg-card shadow-sm">
+          <div className="flex shrink-0 items-center justify-between border-b border-border bg-orange-50/50 px-6 py-4">
+            <h2 className="flex items-center gap-2 font-serif text-lg font-medium text-orange-900">
               <Sparkles className="w-5 h-5 text-orange-500" />
               AI Action Plan
             </h2>
           </div>
 
-          <div className="p-8 overflow-y-auto flex-1 space-y-10 pr-6">
-            
-            {/* 1. EXECUTIVE SUMMARY & SCORE */}
-            <section className="flex items-center gap-8 pb-8 border-b border-border">
-              {/* SVG Donut Chart */}
-              <div className="relative flex items-center justify-center shrink-0">
+          <div className="flex-1 space-y-10 overflow-y-auto p-8 pr-6">
+            <section className="flex items-center gap-8 border-b border-border pb-8">
+              <div className="relative flex shrink-0 items-center justify-center">
                 <svg className="w-32 h-32 transform -rotate-90">
-                  <circle cx="64" cy="64" r={radius} className="stroke-muted fill-none" strokeWidth="8" />
-                  <circle 
-                    cx="64" cy="64" r={radius} 
-                    className={`fill-none transition-all duration-1000 ease-out ${getScoreColor(data.matchScore)}`} 
-                    strokeWidth="8" 
-                    strokeDasharray={circumference} 
-                    strokeDashoffset={strokeDashoffset} 
-                    strokeLinecap="round" 
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r={radius}
+                    className="stroke-muted fill-none"
+                    strokeWidth="8"
+                  />
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r={radius}
+                    className={`fill-none transition-all duration-1000 ease-out ${getScoreColor(data.matchScore)}`}
+                    strokeWidth="8"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">
-                  <span className={`text-3xl font-serif font-bold ${getScoreColor(data.matchScore).split(' ')[0]}`}>
+                  <span
+                    className={`text-3xl font-serif font-bold ${getScoreColor(data.matchScore).split(" ")[0]}`}
+                  >
                     {data.matchScore}%
                   </span>
                 </div>
               </div>
-              
+
               <div className="flex-1">
-                <h3 className="text-xl font-serif font-semibold mb-2">Review Summary</h3>
-                <p className="text-[15px] text-muted-foreground font-dmsans leading-relaxed mb-4">
+                <h3 className="mb-2 text-xl font-serif font-semibold">Review Summary</h3>
+                <p className="mb-4 font-dmsans text-[15px] leading-relaxed text-muted-foreground">
                   {data.summary}
                 </p>
-                
+
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <span className="mr-2 self-center text-sm font-semibold text-muted-foreground">
+                    Matched Skills:
+                  </span>
+                  {data.matchedSkills.length > 0 ? (
+                    data.matchedSkills.map((skill) => (
+                      <Badge
+                        key={skill}
+                        variant="outline"
+                        className="border-green-200 bg-green-50 text-green-700"
+                      >
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> {skill}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">No explicit skill matches yet.</span>
+                  )}
+                </div>
+
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm font-semibold text-muted-foreground mr-2 self-center">Missing Keywords:</span>
-                  {/* 4. Updated map to use missingSkills from Zod schema */}
-                  {data.missingSkills.map(skill => (
-                    <Badge key={skill} variant="outline" className="bg-red-50 text-red-700 border-red-200 border-dashed">
-                      <XCircle className="w-3 h-3 mr-1" /> {skill}
-                    </Badge>
-                  ))}
+                  <span className="mr-2 self-center text-sm font-semibold text-muted-foreground">
+                    Missing Keywords:
+                  </span>
+                  {data.missingSkills.length > 0 ? (
+                    data.missingSkills.map((skill) => (
+                      <Badge
+                        key={skill}
+                        variant="outline"
+                        className="border-red-200 border-dashed bg-red-50 text-red-700"
+                      >
+                        <XCircle className="w-3 h-3 mr-1" /> {skill}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">No critical missing keywords detected.</span>
+                  )}
                 </div>
               </div>
             </section>
 
-            {/* 2. UNIFIED DIFF VIEWER */}
             <section>
-              <div className="flex items-center gap-2 mb-6">
+              <div className="mb-6 flex items-center gap-2">
                 <TerminalSquare className="w-5 h-5 text-muted-foreground" />
-                <h3 className="text-lg font-serif font-semibold">Suggested Refactors</h3>
-                <span className="ml-2 text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
+                <h3 className="text-lg font-serif font-semibold">Grounded Rewrite Suggestions</h3>
+                <span className="ml-2 rounded bg-muted px-2 py-1 font-mono text-xs text-muted-foreground">
                   {data.bulletSuggestions.length} changes requested
                 </span>
               </div>
 
               <div className="space-y-8">
-                {data.bulletSuggestions.map((suggestion, i) => (
-                  <div key={i} className="flex flex-col gap-3">
-                    <p className="text-sm text-muted-foreground font-medium pl-3 border-l-2 border-orange-400">
-                      <span className="font-bold text-foreground">Why: </span>
-                      {suggestion.reasoning}
-                    </p>
-
-                    <div className="font-mono text-[13px] rounded-sm overflow-hidden border border-border bg-zinc-50/30 leading-relaxed shadow-sm">
-                      <div className="flex w-full bg-[#FFEBE9] text-[#24292F] px-4 py-3">
-                        <span className="w-8 text-red-500 select-none opacity-70 shrink-0 text-right pr-4">-</span>
-                        <span className="flex-1 whitespace-pre-wrap">{suggestion.originalConcept}</span>
+                {data.bulletSuggestions.length > 0 ? (
+                  data.bulletSuggestions.map((suggestion, index) => (
+                    <div key={`${suggestion.originalQuote}-${index}`} className="flex flex-col gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                          {getSuggestionLabel(suggestion.changeType)}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          Confidence: {Math.round(suggestion.confidence * 100)}%
+                        </span>
                       </div>
-                      
-                      <div className="flex w-full bg-[#E6FFEC] text-[#24292F] px-4 py-3 border-t border-white/50">
-                        <span className="w-8 text-green-600 select-none opacity-70 shrink-0 text-right pr-4">+</span>
-                        <span className="flex-1 whitespace-pre-wrap">{suggestion.suggestedRewrite}</span>
+
+                      <p className="border-l-2 border-orange-400 pl-3 text-sm font-medium text-muted-foreground">
+                        <span className="font-bold text-foreground">Requirement: </span>
+                        {suggestion.matchedRequirement}
+                      </p>
+
+                      <p className="border-l-2 border-border pl-3 text-sm font-medium text-muted-foreground">
+                        <span className="font-bold text-foreground">Why: </span>
+                        {suggestion.reasoning}
+                      </p>
+
+                      <div className="overflow-hidden rounded-sm border border-border bg-zinc-50/30 font-mono text-[13px] leading-relaxed shadow-sm">
+                        <div className="flex w-full bg-[#FFEBE9] px-4 py-3 text-[#24292F]">
+                          <span className="w-8 shrink-0 select-none pr-4 text-right text-red-500 opacity-70">
+                            -
+                          </span>
+                          <span className="flex-1 whitespace-pre-wrap">
+                            {suggestion.originalQuote}
+                          </span>
+                        </div>
+
+                        <div className="flex w-full border-t border-white/50 bg-[#E6FFEC] px-4 py-3 text-[#24292F]">
+                          <span className="w-8 shrink-0 select-none pr-4 text-right text-green-600 opacity-70">
+                            +
+                          </span>
+                          <span className="flex-1 whitespace-pre-wrap">
+                            {suggestion.suggestedRewrite}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="rounded-md border border-dashed border-border bg-muted/20 px-4 py-8 text-center text-sm text-muted-foreground">
+                    No grounded rewrites are needed right now. The existing resume already supports the strongest JD requirements.
                   </div>
-                ))}
+                )}
               </div>
             </section>
-
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

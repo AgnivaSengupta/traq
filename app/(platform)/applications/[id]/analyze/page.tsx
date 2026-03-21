@@ -26,9 +26,12 @@ export default async function AnalyzePage({
     redirect("/applications"); 
   }
 
-  // 4. Sanitize the MongoDB document for the Client Component
-  const cleanJobData = JSON.parse(JSON.stringify(job));
+  const cleanJobData = {
+    _id: job._id.toString(),
+    company: job.company,
+    position: job.position,
+    analysisResult: job.analysisResult,
+  };
 
-  // 5. Pass it as a prop!
   return <AnalyzeFitClient jobData={cleanJobData} />;
 }

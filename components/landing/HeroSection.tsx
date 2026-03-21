@@ -3,9 +3,9 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 
 const checks = [
-  "Easy Application Tracking",
-  "Resume builder",
-  "Customized AI resume checker",
+  "Structured application tracking",
+   "Resume vault and version control",
+   "Grounded AI fit analysis",
 ];
 
 type AuthType = "signin" | "signup";
@@ -27,13 +27,14 @@ export const HeroSection = ({ handleOpenAuth }: HeroSectionProps) => {
         </Badge>
 
         {/*<h1 className="max-w-3xl text-6xl font-serif leading-[1.1] tracking-wider text-foreground">Effortless Job Tracking and Resume Building Made Simple</h1>*/}
-        <h1 className="max-w-3xl text-6xl font-serif leading-[1.1] tracking-wider text-foreground">
-          A Better Way To Track Your Job Applications
-        </h1>
-        <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground font-dm-sans">
-          Organize your job search, build tailored resumes, and land interviews
-          faster — all in one beautifully simple platform.
-        </p>
+        <h1 className="max-w-4xl text-5xl font-serif leading-[1.05] tracking-wide text-foreground sm:text-6xl md:text-7xl">
+           Bring order, clarity, and momentum to your job search.
+         </h1>
+         <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+             Track every opportunity, keep tailored resumes ready, and review your
+             fit with grounded AI assistance in one focused workspace built for
+             modern job hunting.
+           </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
           {checks.map((item) => (

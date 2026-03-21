@@ -50,8 +50,29 @@ export async function getFileViewUrl (fileKey: string) {
     
     const signedUrl = await getSignedUrl(S3, command, { expiresIn: 600 });
     return { success: true, url: signedUrl };
-  } catch (error) {
+  } catch {
     console.error("Error generating the view URL");
     return { error: "Failed to generate view URL" };
   }
+}
+
+export async function getPublicFileUrl(fileKey: string) {
+  const publicBaseUrl =
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL || process.env.R2_PUBLIC_URL;
+
+  if (!publicBaseUrl) {
+    return {
+      error:
+        "Missing public file base URL. Set NEXT_PUBLIC_R2_PUBLIC_URL or R2_PUBLIC_URL.",
+    };
+  }
+
+  const normalizedBaseUrl = publicBaseUrl.endsWith("/")
+    ? publicBaseUrl.slice(0, -1)
+    : publicBaseUrl;
+
+  return {
+    success: true,
+    url: `${normalizedBaseUrl}/${fileKey}`,
+  };
 }

@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { getSession } from "../auth";
 import connectDB from "../db";
 import Resume from "../models/resume";
-import { headers } from "next/headers";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { JobApplication } from "../models";
 
@@ -159,7 +158,19 @@ export async function linkResume(resumeId: string, jobId: string) {
 
     // linking the resume to the job
     // await resume.updateOne({ $addToSet: { linkedJobs: jobId } });
-    await job.updateOne({ $set: { resume: resumeId } });
+    await job.updateOne({
+      $set: {
+        resume: resumeId,
+        analyzedResumeId: null,
+        analysisFingerprint: null,
+        analysisJdFingerprint: null,
+        analyzedResumeFileKey: null,
+        lastAnalyzedAt: null,
+      },
+      $unset: {
+        analysisResult: "",
+      },
+    });
     
     revalidatePath("/applications");
 

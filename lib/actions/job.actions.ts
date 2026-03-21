@@ -1,8 +1,9 @@
 "use server";
-import { JobApplication, Column, Resume } from "../models";
+import { JobApplication, Column } from "../models";
 import connectDB from "../db";
 import { revalidatePath } from "next/cache";
 import { IExtractedJD } from "../models/jobApplication";
+
 
 interface CreateJobParams {
   userId: string; // <--- Add this
@@ -72,7 +73,7 @@ export async function updateJobStatus(jobId: string, newColumnId: string) {
     }
 
     // 2. Update the Job's columnId
-    const updatedJob = await JobApplication.findByIdAndUpdate(
+    await JobApplication.findByIdAndUpdate(
       jobId,
       { columnId: newColumnId },
       { new: true }
@@ -133,18 +134,45 @@ export async function getUserApplications(userId: string) {
       .populate("resume", "name")
       .sort({createdAt: -1})
       .lean();
+
+    const applications = userApplications.map((job) => ({
+      ...job,
+      _id: job._id.toString(),
+      boardId: job.boardId?.toString?.() ?? null,
+      columnId: job.columnId
+        ? {
+            ...job.columnId,
+            _id: job.columnId._id.toString(),
+          }
+        : null,
+      resume: job.resume
+        ? {
+            ...job.resume,
+            _id: job.resume._id.toString(),
+          }
+        : null,
+      analyzedResumeId: job.analyzedResumeId?.toString?.() ?? null,
+      analysisFingerprint: job.analysisFingerprint ?? null,
+      analysisJdFingerprint: job.analysisJdFingerprint ?? null,
+      analyzedResumeFileKey: job.analyzedResumeFileKey ?? null,
+      createdAt: job.createdAt?.toISOString?.() ?? null,
+      updatedAt: job.updatedAt?.toISOString?.() ?? null,
+      applicationDate: job.applicationDate?.toISOString?.() ?? null,
+      lastAnalyzedAt: job.lastAnalyzedAt?.toISOString?.() ?? null,
+    }));
     
-    return { success: true, applications: JSON.parse(JSON.stringify(userApplications))};
+    return { success: true, applications };
   } catch (error) {
     console.log("Error fetching the data: ", error);
     return {success: false, error: "Failed to fetch data"}
   }
 }
 
-export async function getJDAnalysis(jobId: string) {
+export async function getJDAnalysis(_jobId: string) {
   try {
+    void _jobId;
     
-  } catch (error) {
+  } catch {
     
   }
 }
