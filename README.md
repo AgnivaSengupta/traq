@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Traq
+
+Traq is a job search tracking application built with Next.js. It helps candidates organize job applications, manage resume versions, and compare resumes against job descriptions using AI-assisted analysis.
+
+> Status: Under development. Core product flows are being built and refined, so features, data models, and setup details may change.
+
+![Traq landing page preview](public/99shots_so.png)
+
+## Current Project Status
+
+The project currently includes:
+
+- Landing page with authentication entry points.
+- Email/password and Google authentication through Better Auth.
+- User-specific dashboard with a kanban-style job application board.
+- Applications view for browsing tracked opportunities by status.
+- Resume Vault for uploading, previewing, replacing, and deleting resume files.
+- Cloudflare R2/S3-compatible storage integration for resume files.
+- Job description scraping and structured extraction.
+- AI resume-to-job-description matching with fit scores, matched skills, missing skills, requirement assessments, and rewrite suggestions.
+- MongoDB/Mongoose data models for users, boards, columns, job applications, and resumes.
+
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Better Auth
+- MongoDB and Mongoose
+- AWS SDK for S3-compatible storage
+- OpenRouter AI SDK
+- shadcn-style UI primitives
+- Lucide React icons
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create a `.env` file in the project root with the required environment variables:
+
+```env
+DATABASE_URI=
+NEXT_PUBLIC_BETTER_AUTH_URL=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+OPENROUTER_KEY=
+S3_API=
+R2_ACCESS_TOKEN_ID=
+R2_SECRET_ID=
+NEXT_PUBLIC_R2_PUBLIC_URL=
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev
+```
 
-## Learn More
+Starts the local development server.
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Creates a production build.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run start
+```
 
-## Deploy on Vercel
+Starts the production server after building.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run lint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Runs ESLint.
+
+## Project Structure
+
+```text
+app/                  Next.js app routes and layouts
+components/           UI, landing, dashboard, kanban, application, and resume components
+data/                 Local static data
+lib/                  Auth, database, server actions, hooks, models, and utilities
+public/               Static assets
+```
+
+## Notes
+
+- This project is private and actively under development.
+- Resume uploads depend on a configured S3-compatible storage bucket.
+- AI job description extraction and resume analysis require an OpenRouter API key.
+- MongoDB is required for authentication and product data.
