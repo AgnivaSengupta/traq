@@ -116,7 +116,7 @@ const RegisterForm = ({
           </Button>
 
           {error && (
-            <div className="rounded-md bg-destructive/20 text-sm p-2 px-4 text-destructive">
+            <div className="rounded-md bg-destructive/20 text-sm p-2 text-destructive px-4">
               {error}
             </div>
           )}

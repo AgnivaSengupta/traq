@@ -1,13 +1,13 @@
 // "use client"
 
-import ApplicationsList from "@/components/application/ApplicationsList";
-import ApplicationsView from "@/components/application/ApplicationsView";
-import Header from "@/components/application/Header";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+// import ApplicationsList from "@/components/application/ApplicationsList";
+import ApplicationsView, { userApplications } from "@/components/application/ApplicationsView";
+// import Header from "@/components/application/Header";
+// import { Badge } from "@/components/ui/badge";
+// import { Button } from "@/components/ui/button";
 import { getUserApplications } from "@/lib/actions/job.actions";
 import { getSession } from "@/lib/auth";
-import { File } from "lucide-react";
+// import { File } from "lucide-react";
 // import { useState } from "react";
 
 const TABS = ['All', 'Wishlist', 'Applied', 'Interviewing', 'Offered', 'Rejected'];
@@ -19,7 +19,7 @@ export default async function ApplicationPage() {
   if (!session) return (<div>Please Log in</div>)
   
   const response = await getUserApplications(session?.user.id);
-  const applications = response.applications;
+  const applications : userApplications[] = response.applications;
   
 
   return (

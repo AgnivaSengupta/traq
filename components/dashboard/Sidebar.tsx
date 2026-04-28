@@ -18,10 +18,27 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { signOut } from "@/lib/actions/auth-actions";
+// import { signOut } from "@/lib/actions/auth-actions";
+import { authClient } from "@/lib/auth-client";
 
 const Sidebar = () => {
+  // const [collapsed, setCollapsed] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+    const router = useRouter(); // Initialize router here
+  
+    const handleSignOut = async () => {
+      try {
+        await authClient.signOut({
+          fetchOptions: {
+            onSuccess: () => {
+              router.push("/"); // Redirect to landing page
+            },
+          },
+        });
+      } catch (error) {
+        console.error("Failed to sign out:", error);
+      }
+    };
 
   if (collapsed) {
     return (
@@ -114,7 +131,7 @@ const Sidebar = () => {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator/>
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem onClick={handleSignOut}>
               <LogOut />
               Log Out
             </DropdownMenuItem>

@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { auth, getSession } from "../auth";
 // import { connectDB } from "../db";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
 const client = new MongoClient(process.env.DATABASE_URI!);
 const db = client.db();
@@ -85,13 +85,13 @@ export const signOutOtherSessions = async () => {
     await client.connect();
     const currentSession = await getSession();
 
-    if (!currentSession?.user?.id || !currentSession?.session?.id){
-      return {success: false, error: "Unauthorized"};
+    if (!currentSession?.user?.id || !currentSession?.session?.token) {
+      return { success: false, error: "Unauthorized" };
     }
 
     const result = await db.collection("session").deleteMany({
-      userId: currentSession.user.id,
-      id: { $ne: currentSession.session.id },
+      userId: new ObjectId(currentSession.user.id),
+      token: { $ne: currentSession.session.token },
     });
 
     return {

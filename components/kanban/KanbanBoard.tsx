@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Star, Share2, Filter, LayoutGrid } from "lucide-react";
+// import { Star, Share2, Filter, LayoutGrid } from "lucide-react";
 import KanbanColumn from "./KanbanColumn";
 import { BoardData, JobApplication } from "@/lib/models/models.types";
 import NewJobDialog from "./NewJobDialog";

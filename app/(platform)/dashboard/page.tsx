@@ -25,13 +25,13 @@ async function getUserBoardData(userId: string) {
     _id: board._id.toString(),
     createdAt: board.createdAt?.toISOString(),
     updatedAt: board.updatedAt?.toISOString(),
-    columns: board.columns.map((col: any) => ({
+    columns: (board.columns ?? []).map((col: any) => ({
       ...col,
       _id: col._id.toString(),
       boardId: col.boardId.toString(),
       createdAt: col.createdAt?.toISOString(),
       updatedAt: col.updatedAt?.toISOString(),
-      jobApplications: col.jobApplications.map((job: any) => ({
+      jobApplications: (col.jobApplications ?? []).map((job: any) => ({
         ...job,
         _id: job._id.toString(),
         columnId: job.columnId.toString(),
@@ -59,6 +59,11 @@ export default async function Dashboard() {
 
   const board = await getUserBoardData(session.user.id);
   // console.log(board);
+
+  // If no board data (e.g., new user), render a placeholder message
+  if (!board) {
+    return <div>No board data available. Please create a board to view the dashboard.</div>;
+  }
 
   return (
     <>

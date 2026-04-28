@@ -138,7 +138,7 @@ function ResumeCard({
 
 function UploadingResumeCard({ file }: { file: File }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-dashed border-orange-500/40 bg-background px-4 py-5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-4">
+    <div className="relative overflow-hidden rounded-md border border-dashed border-orange-500/40 bg-background px-4 py-5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-4">
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/8 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]" />
       <div className="flex items-start gap-5 md:items-center">
         <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100">
@@ -285,6 +285,8 @@ export default function ResumeVaultPage() {
       await fetchResumes();
     }
   };
+  
+  
   return (
     <div className="flex flex-1 flex-col min-h-screen bg-background">
       <header className="flex items-center gap-3 border-b border-border bg-card px-5 py-3 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-3">

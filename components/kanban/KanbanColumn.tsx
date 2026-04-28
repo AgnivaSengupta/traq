@@ -78,7 +78,7 @@ const KanbanColumn = ({
         <div className="ml-auto flex items-center gap-1">
           <button
             onClick={onAddTask}
-            className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors"
+            className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors cursor-pointer"
           >
             <Plus className="h-4 w-4" />
           </button>

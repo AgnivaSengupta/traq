@@ -106,7 +106,7 @@ const LoginForm = ({
           </Button>
 
           {error && (
-            <div className="rounded-md bg-destructive text-sm p-2 text-destructive">
+            <div className="rounded-md bg-destructive/20 text-sm p-2 text-destructive px-4">
               {error}
             </div>
           )}

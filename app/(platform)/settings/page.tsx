@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { authClient, useSession } from "@/lib/auth-client";
 import { useFileUpload } from "@/lib/hooks/useFileUpload";
 import { getPublicFileUrl } from "@/lib/actions/upload";
 import { updateProfilePicture, signOutOtherSessions } from "@/lib/actions/auth-actions";
+import { useRouter } from "next/navigation";
 
 type PasswordFormState = {
   currentPassword: string;
@@ -35,9 +36,10 @@ function getInitials(name?: string | null) {
 }
 
 export default function SettingsPage() {
+  
   const { data: sessionData } = useSession();
   const sessionUser = sessionData?.user;
-  
+    
   const [isSigningOutOthers, setIsSigningOutOthers] = useState(false);
   const [sessionActionMessage, setSessionActionMessage] = useState("");
 
@@ -59,14 +61,26 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadFile, isUploading, error: uploadError } = useFileUpload();
 
-  const displayName = sessionUser?.name || "Agniva Sengupta";
+  const displayName = sessionUser?.name || "";
   const email = sessionUser?.email || "agniva@example.com";
   const displayAvatar = avatarUrl || sessionUser?.profilePic || sessionUser?.image || DEFAULT_AVATAR;
   const initials = useMemo(() => getInitials(displayName), [displayName]);
 
-  const [firstName, lastName] = displayName.split(" ");
-  const [fName, setFName] = useState(firstName);
-  const [lName, setLName] = useState(lastName);
+  const nameParts = displayName.split(" ");
+  const [firstName, lastName] = [
+    nameParts[0] || "",
+    nameParts.slice(1).join(" ") || "",
+  ];
+  const [fName, setFName] = useState("");
+  const [lName, setLName] = useState("");
+  
+  useEffect(() => {
+      if (sessionUser?.name) {
+        const parts = sessionUser.name.trim().split(" ");
+        setFName(parts[0] || "");
+        setLName(parts.slice(1).join(" ") || "");
+      }
+    }, [sessionUser?.name]);
   
   const handleNameChange = async () => {
     // e.preventDefault();
@@ -86,6 +100,7 @@ export default function SettingsPage() {
       console.error("Update failed:", error);
     } finally {
       setIsNameSaving(false);
+      // await authClient.getSession();
     }
   };
 
@@ -231,6 +246,7 @@ export default function SettingsPage() {
       setIsSigningOutOthers(false);
     }
   };
+  
 
   return (
     <div className="flex h-screen flex-1 flex-col bg-background">
@@ -307,11 +323,11 @@ export default function SettingsPage() {
             <div className="grid grid-cols-2 gap-6 mb-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" defaultValue={firstName} className="font-dmsans" onChange={(e) => setFName(e.target.value)}/>
+                <Input id="firstName" value={fName} className="font-dmsans" onChange={(e) => setFName(e.target.value)}/>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" defaultValue={lastName} className="font-dmsans" onChange={(e) => setLName(e.target.value)}/>
+                <Input id="lastName" value={lName} className="font-dmsans" onChange={(e) => setLName(e.target.value)}/>
               </div>
             </div>
             <Button
@@ -556,6 +572,10 @@ export default function SettingsPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
+      </Dialog>
+      
+      <Dialog>
+        
       </Dialog>
     </div>
   );
